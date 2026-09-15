@@ -11,21 +11,27 @@ body {
 }
 .header {
     text-align: center;
-    border-bottom: 2px solid #2c5282;
+    border-bottom: 2px solid __ACCENT__;
     padding-bottom: 12px;
     margin-bottom: 20px;
+}
+.logo {
+    max-height: 64px;
+    max-width: 160px;
+    object-fit: contain;
+    margin-bottom: 10px;
 }
 .church-name {
     font-size: 22pt;
     font-weight: bold;
-    color: #2c5282;
+    color: __ACCENT__;
 }
 .date { font-size: 12pt; color: #666; margin-top: 4px; }
 .section { margin: 16px 0; }
 .section-title {
     font-size: 13pt;
     font-weight: bold;
-    color: #2c5282;
+    color: __ACCENT__;
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 4px;
     margin-bottom: 8px;
@@ -57,6 +63,8 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
         ) from e
 
     bulletin = content["bulletin"]
+    accent = input_data.get("brand_accent_color") or "#2c5282"
+    logo_url = input_data.get("logo_url")
 
     order_items = "".join(
         f"<div class='announcement-item'>&bull; {_esc(item)}</div>"
@@ -87,6 +95,7 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
 <head><meta charset="UTF-8"></head>
 <body>
 <div class="header">
+    {f'<img class="logo" src="{_esc(logo_url)}" alt="">' if logo_url else ''}
     <div class="church-name">{_esc(input_data.get('church_name', 'Church'))}</div>
     <div class="date">{_esc(input_data.get('service_date'))} | {_esc(input_data.get('service_time', '10:00 AM'))}</div>
 </div>
@@ -123,5 +132,7 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
 </body>
 </html>"""
 
-    pdf_bytes = HTML(string=html_content).write_pdf(stylesheets=[CSS(string=PDF_CSS)])
+    pdf_bytes = HTML(string=html_content).write_pdf(
+        stylesheets=[CSS(string=PDF_CSS.replace("__ACCENT__", accent))]
+    )
     return pdf_bytes

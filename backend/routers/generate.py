@@ -17,7 +17,7 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
     # Subscription status gates the free tier; Redis guards abuse caps.
     profile = (
         supabase_admin.table("profiles")
-        .select("subscription_status, bulletins_generated_total")
+        .select("subscription_status, bulletins_generated_total, church_name, denomination, brand_accent_color, logo_path")
         .eq("id", user_id)
         .single()
         .execute()
@@ -31,8 +31,22 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
     await check_rate_limit(user_id, is_paid)
 
     try:
-        content = generate_bulletin_content(request)
-        pdf_bytes = generate_pdf(content, request.model_dump())
+        generation_input = request.model_dump()
+        if profile.data.get("church_name"):
+            generation_input["church_name"] = profile.data["church_name"]
+        if profile.data.get("denomination"):
+            generation_input["denomination"] = profile.data["denomination"]
+        if profile.data.get("brand_accent_color"):
+            generation_input["brand_accent_color"] = profile.data["brand_accent_color"]
+        if profile.data.get("logo_path"):
+            signed_logo = supabase_admin.storage.from_("church-assets").create_signed_url(
+                profile.data["logo_path"], 3600
+            )
+            generation_input["logo_url"] = signed_logo.get("signedURL")
+
+        branded_request = BulletinRequest(**generation_input)
+        content = generate_bulletin_content(branded_request)
+        pdf_bytes = generate_pdf(content, generation_input)
     except ValueError as e:
         raise HTTPException(status_code=502, detail=str(e))
     except RuntimeError as e:
@@ -59,7 +73,7 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
                 "user_id": user_id,
                 "title": request.sermon_title,
                 "service_date": request.service_date,
-                "input_data": request.model_dump(),
+                "input_data": generation_input,
                 "generated_content": content,
                 "pdf_url": pdf_path,
             }

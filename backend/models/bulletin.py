@@ -17,6 +17,8 @@ class BulletinRequest(BaseModel):
     offering_info: Optional[str] = ""
     tone: Optional[str] = "warm and welcoming"
     denomination: Optional[str] = ""
+    brand_accent_color: Optional[str] = None
+    logo_url: Optional[str] = None
 
     @field_validator("church_name", "sermon_title", "scripture_reference")
     @classmethod
@@ -46,3 +48,14 @@ class BulletinRequest(BaseModel):
         if v and v not in allowed:
             raise ValueError(f"Tone must be one of: {', '.join(sorted(allowed))}")
         return v
+
+    @field_validator("brand_accent_color")
+    @classmethod
+    def valid_accent_color(cls, v: Optional[str]) -> Optional[str]:
+        if not v:
+            return v
+        import re
+
+        if not re.match(r"^#[0-9a-fA-F]{6}$", v):
+            raise ValueError("Accent color must be a hex color")
+        return v.lower()

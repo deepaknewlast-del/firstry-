@@ -13,6 +13,8 @@ CREATE TABLE public.profiles (
   denomination TEXT,
   city TEXT,
   country TEXT DEFAULT 'US',
+  brand_accent_color TEXT DEFAULT '#4e2456' CHECK (brand_accent_color ~ '^#[0-9A-Fa-f]{6}$'),
+  logo_path TEXT,
   stripe_customer_id TEXT UNIQUE,
   subscription_status TEXT DEFAULT 'free' CHECK (subscription_status IN ('free', 'active', 'past_due', 'canceled')),
   subscription_id TEXT,
@@ -110,6 +112,24 @@ CREATE POLICY "Users view own usage" ON public.usage_logs
 -- Storage: private bucket + per-user folder access
 -- ---------------------------------------------------------------------------
 INSERT INTO storage.buckets (id, name, public) VALUES ('bulletins', 'bulletins', false);
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'church-assets',
+  'church-assets',
+  false,
+  2097152,
+  ARRAY['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+);
 
 CREATE POLICY "Users access own PDFs" ON storage.objects
   FOR ALL USING (auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Users access own church assets" ON storage.objects
+  FOR ALL USING (
+    bucket_id = 'church-assets'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  )
+  WITH CHECK (
+    bucket_id = 'church-assets'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );

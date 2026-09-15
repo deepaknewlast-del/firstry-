@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CalendarDays,
   Church,
@@ -10,6 +10,7 @@ import {
   X,
 } from 'lucide-react'
 import { generateBulletin } from '../../lib/api'
+import { useSubscription } from '../../hooks/useSubscription'
 import type { BulletinResult } from '../../lib/api'
 
 interface FormData {
@@ -76,6 +77,8 @@ function SectionHeader({
 }
 
 export function BulletinForm({ onSuccess }: { onSuccess: (data: BulletinResult) => void }) {
+  const { profile } = useSubscription()
+  const [loadedProfileDefaults, setLoadedProfileDefaults] = useState(false)
   const [form, setForm] = useState<FormData>({
     church_name: '',
     service_date: new Date().toISOString().split('T')[0],
@@ -93,6 +96,16 @@ export function BulletinForm({ onSuccess }: { onSuccess: (data: BulletinResult) 
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (loadedProfileDefaults || !profile) return
+    setForm((current) => ({
+      ...current,
+      church_name: current.church_name || profile.church_name || '',
+      denomination: current.denomination || profile.denomination || '',
+    }))
+    setLoadedProfileDefaults(true)
+  }, [loadedProfileDefaults, profile])
 
   const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -135,6 +148,15 @@ export function BulletinForm({ onSuccess }: { onSuccess: (data: BulletinResult) 
       {/* Church details */}
       <section className="card space-y-4 animate-fade-up">
         <SectionHeader icon={Church} title="Church Details" hint="Who and where" />
+
+        {(profile?.church_name || profile?.logo_path || profile?.brand_accent_color) && (
+          <div className="rounded-lg border border-rule bg-cream px-4 py-3">
+            <p className="text-sm font-semibold text-primary-800">Saved branding applied</p>
+            <p className="text-xs text-ink-muted mt-0.5">
+              Your account logo and accent color will be used on the PDF.
+            </p>
+          </div>
+        )}
 
         <div>
           <FieldLabel htmlFor="church-name">Church name</FieldLabel>

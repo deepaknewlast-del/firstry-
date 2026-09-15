@@ -144,4 +144,5 @@ to match visible content.
 - Bulletin generation requires a confirmed email address
 - Signup can pass a Cloudflare Turnstile token to Supabase Auth when `VITE_TURNSTILE_SITE_KEY` is configured
 - Row Level Security on all tables; private storage bucket with per-user folders + 1-hour signed URLs
+- Church logos are stored in the private `church-assets` bucket with a 2 MB upload cap and image-only MIME allowlist
 - Free tier (3 bulletins) enforced in Redis and DB; paid tier capped at 200/month for abuse protection

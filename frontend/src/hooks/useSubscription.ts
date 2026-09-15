@@ -4,6 +4,9 @@ import { useAuth } from './useAuth'
 
 export interface Profile {
   church_name: string | null
+  denomination: string | null
+  brand_accent_color: string | null
+  logo_path: string | null
   subscription_status: 'free' | 'active' | 'past_due' | 'canceled'
   bulletins_generated_total: number
 }
@@ -20,7 +23,7 @@ export function useSubscription() {
     }
     supabase
       .from('profiles')
-      .select('church_name, subscription_status, bulletins_generated_total')
+      .select('church_name, denomination, brand_accent_color, logo_path, subscription_status, bulletins_generated_total')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
