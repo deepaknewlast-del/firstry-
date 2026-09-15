@@ -12,8 +12,9 @@ settings = get_settings()
 
 genai.configure(api_key=settings.GEMINI_API_KEY)
 
-# Tried in order — Google retires models occasionally, so fall back gracefully.
-MODEL_CHAIN = ("gemini-3.6-flash", "gemini-flash-latest", "gemini-2.5-flash")
+# Tried in order — keep explicit model IDs only. Avoid "latest" aliases because
+# they can resolve to retired models and cause confusing 404s.
+MODEL_CHAIN = ("gemini-3.6-flash", "gemini-2.5-flash")
 
 # Flash models on this tier spend part of the output budget on internal
 # reasoning, so the cap must comfortably exceed the ~1.5k tokens of JSON we
@@ -113,6 +114,8 @@ def sanitize_input(data: dict) -> dict:
         )
     if isinstance(data, list):
         return [sanitize_input(item) for item in data[:10]]
+    if not isinstance(data, dict):
+        return data
 
     safe = {}
     for key, value in data.items():
@@ -142,9 +145,8 @@ def _extract_json_object(raw: str) -> str:
 
 def generate_bulletin_content(data: BulletinRequest) -> dict:
     """Generate all bulletin content via Gemini. API key is server-side only."""
-    safe_input = sanitize_input(data.model_dump())
-
-    prompt = _build_prompt(data)
+    safe_input = BulletinRequest(**sanitize_input(data.model_dump()))
+    prompt = _build_prompt(safe_input)
 
     try:
         global model
