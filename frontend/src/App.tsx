@@ -10,6 +10,8 @@ import Generate from './pages/Generate'
 import History from './pages/History'
 import Account from './pages/Account'
 import Pricing from './pages/Pricing'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import { Privacy, Terms } from './pages/Legal'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -54,6 +56,8 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/generate" element={<ProtectedRoute><Generate /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />

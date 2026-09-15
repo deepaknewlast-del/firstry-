@@ -64,6 +64,9 @@ export async function generateBulletin(formData: Record<string, unknown>): Promi
     if (res.status === 429 || message?.includes('limit_reached')) {
       throw new Error('limit_reached')
     }
+    if (res.status === 403 && message === 'email_not_verified') {
+      throw new Error('email_not_verified')
+    }
     throw new Error(message || 'Generation failed')
   }
   return res.json()

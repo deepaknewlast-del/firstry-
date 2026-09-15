@@ -12,7 +12,7 @@ One form → print-ready PDF bulletin, announcement slides, social posts, and em
 | Backend | FastAPI (Python 3.11) — all AI keys live here only |
 | Database + Auth | Supabase (PostgreSQL + Supabase Auth + Storage) |
 | AI | Google Gemini (`gemini-3.6-flash`, with automatic model fallback) |
-| Payments | Stripe subscriptions |
+| Payments | Stubbed Stripe subscription flow; real processor wiring is intentionally later |
 | Rate limiting | Upstash Redis (REST) |
 | PDF | WeasyPrint |
 | Email | Resend |
@@ -31,8 +31,10 @@ churchpress/
 ### 1. Database
 1. Create a project at [supabase.com](https://supabase.com)
 2. Open SQL Editor and run `supabase/migrations/001_initial.sql`
-3. Auth settings: enable Email provider
-4. Note your project URL, anon key, and service_role key
+3. Auth settings: enable Email provider and require email confirmation
+4. Enable Google as an OAuth provider if you want "Continue with Google"
+5. If using Turnstile, enable captcha protection in Supabase Auth and paste the Turnstile secret there
+6. Note your project URL, anon key, and service_role key
 
 ### 2. Backend
 ```bash
@@ -55,7 +57,7 @@ Health check: http://localhost:8000/health
 ```bash
 cd frontend
 npm install
-cp .env.example .env             # fill in Supabase URL + anon key + API URL
+cp .env.example .env             # fill in Supabase URL, anon key, API URL, and optional Turnstile site key
 npm run dev                      # http://localhost:5173
 ```
 
@@ -66,9 +68,9 @@ npm run dev                      # http://localhost:5173
 
 **Frontend (Vercel):** Import repo → root `frontend/` → add `VITE_` env vars → deploy.
 
-**Stripe webhook:** Add endpoint `https://<your-api>/api/billing/webhook` listening to
+**Payment webhook, later:** Add endpoint `https://<your-api>/api/billing/webhook` listening to
 `customer.subscription.updated` and `customer.subscription.deleted`; copy the signing secret
-into `STRIPE_WEBHOOK_SECRET`.
+into `STRIPE_WEBHOOK_SECRET`. This app is currently being sequenced payment-last.
 
 ## Design system
 
@@ -137,7 +139,9 @@ to match visible content.
 ## Security model
 
 - `GEMINI_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY` — backend only, never shipped to the browser
-- Frontend holds only `VITE_`-prefixed public values (Supabase anon key)
+- Frontend holds only `VITE_`-prefixed public values (Supabase anon key, Turnstile site key)
 - Every backend endpoint verifies the Supabase JWT via `middleware.auth.verify_token`
+- Bulletin generation requires a confirmed email address
+- Signup can pass a Cloudflare Turnstile token to Supabase Auth when `VITE_TURNSTILE_SITE_KEY` is configured
 - Row Level Security on all tables; private storage bucket with per-user folders + 1-hour signed URLs
 - Free tier (3 bulletins) enforced in Redis and DB; paid tier capped at 200/month for abuse protection

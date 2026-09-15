@@ -120,6 +120,8 @@ export function BulletinForm({ onSuccess }: { onSuccess: (data: BulletinResult) 
       const message = e instanceof Error ? e.message : 'Something went wrong. Please try again.'
       if (message.includes('limit_reached')) {
         setError('Free tier limit reached. Please upgrade to continue generating bulletins.')
+      } else if (message.includes('email_not_verified')) {
+        setError('Please verify your email before generating a bulletin. Check your inbox for the confirmation link.')
       } else {
         setError(message || 'Something went wrong. Please try again.')
       }

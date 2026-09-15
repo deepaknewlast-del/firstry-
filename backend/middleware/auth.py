@@ -1,7 +1,7 @@
 import os
 
 import jwt
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
 
 from db import supabase_admin
 
@@ -24,8 +24,23 @@ async def verify_token(authorization: str = Header(...)) -> dict:
         if not user or not user.user:
             raise HTTPException(status_code=401, detail="User not found")
 
-        return {"user_id": user_id, "email": user.user.email}
+        email_confirmed_at = getattr(user.user, "email_confirmed_at", None) or getattr(
+            user.user, "confirmed_at", None
+        )
+
+        return {
+            "user_id": user_id,
+            "email": user.user.email,
+            "email_verified": bool(email_confirmed_at),
+        }
     except HTTPException:
         raise
     except Exception:
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+async def require_verified_user(user: dict = Depends(verify_token)) -> dict:
+    """Require confirmed email before costly or abuse-sensitive actions."""
+    if not user.get("email_verified"):
+        raise HTTPException(status_code=403, detail="email_not_verified")
+    return user

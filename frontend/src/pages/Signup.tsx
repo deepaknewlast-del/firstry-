@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Chrome } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { TurnstileWidget, hasTurnstileSiteKey } from '../components/auth/TurnstileWidget'
 import { Logo } from '../components/brand/Logo'
 import { useAuth } from '../hooks/useAuth'
 
@@ -14,9 +15,13 @@ const VALUE_PROPS = [
 export default function Signup() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [captchaToken, setCaptchaToken] = useState('')
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState(false)
   const [done, setDone] = useState(false)
-  const { signUp } = useAuth()
+  const { signUp, signInWithGoogle } = useAuth()
+  const captchaEnabled = hasTurnstileSiteKey()
+  const handleCaptchaExpire = useCallback(() => setCaptchaToken(''), [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,15 +29,31 @@ export default function Signup() {
       toast.error('Password must be at least 8 characters')
       return
     }
+    if (captchaEnabled && !captchaToken) {
+      toast.error('Please complete the security check')
+      return
+    }
     setLoading(true)
     try {
-      await signUp(email, password)
+      await signUp(email, password, captchaToken || undefined)
       setDone(true)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Signup failed'
       toast.error(message)
+      setCaptchaToken('')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setOauthLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not start Google sign-in'
+      toast.error(message)
+      setOauthLoading(false)
     }
   }
 
@@ -100,6 +121,22 @@ export default function Signup() {
           <h1 className="font-display text-3xl text-primary-700 mb-2">Create your account</h1>
           <p className="text-sm text-ink-muted mb-7">No credit card needed. Ever.</p>
 
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={oauthLoading}
+            className="btn-secondary w-full flex items-center justify-center gap-2 mb-5"
+          >
+            <Chrome className="w-4 h-4" aria-hidden="true" />
+            {oauthLoading ? 'Opening Google…' : 'Continue with Google'}
+          </button>
+
+          <div className="flex items-center gap-3 mb-5" aria-hidden="true">
+            <div className="h-px bg-rule flex-1" />
+            <span className="text-xs text-slate-500">or</span>
+            <div className="h-px bg-rule flex-1" />
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="signup-email" className="label-caps block mb-1.5">
@@ -139,6 +176,12 @@ export default function Signup() {
                 At least 8 characters.
               </p>
             </div>
+
+            <TurnstileWidget
+              action="signup"
+              onVerify={setCaptchaToken}
+              onExpire={handleCaptchaExpire}
+            />
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? 'Creating account…' : 'Create free account'}

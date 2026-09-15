@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from db import supabase_admin
-from middleware.auth import verify_token
+from middleware.auth import require_verified_user
 from models.bulletin import BulletinRequest
 from services.ai_service import generate_bulletin_content
 from services.pdf_service import generate_pdf
@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.post("/bulletin")
-async def create_bulletin(request: BulletinRequest, user: dict = Depends(verify_token)):
+async def create_bulletin(request: BulletinRequest, user: dict = Depends(require_verified_user)):
     user_id = user["user_id"]
 
     # Subscription status gates the free tier; Redis guards abuse caps.
