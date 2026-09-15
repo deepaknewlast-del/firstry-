@@ -14,7 +14,7 @@ genai.configure(api_key=settings.GEMINI_API_KEY)
 
 # Tried in order — keep explicit model IDs only. Avoid "latest" aliases because
 # they can resolve to retired models and cause confusing 404s.
-MODEL_CHAIN = ("gemini-3.6-flash", "gemini-2.5-flash")
+MODEL_CHAIN = ("models/gemini-3.6-flash", "gemini-2.5-flash")
 
 # Flash models on this tier spend part of the output budget on internal
 # reasoning, so the cap must comfortably exceed the ~1.5k tokens of JSON we
