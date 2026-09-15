@@ -14,7 +14,7 @@ genai.configure(api_key=settings.GEMINI_API_KEY)
 
 # Tried in order — keep explicit model IDs only. Avoid "latest" aliases because
 # they can resolve to retired models and cause confusing 404s.
-MODEL_CHAIN = ("models/gemini-3.6-flash", "gemini-2.5-flash")
+MODEL_CHAIN = ("gemini-3.6-flash",)
 
 # Flash models on this tier spend part of the output budget on internal
 # reasoning, so the cap must comfortably exceed the ~1.5k tokens of JSON we
@@ -32,8 +32,6 @@ def _build_model(model_name: str):
         },
     )
 
-
-model = _build_model(MODEL_CHAIN[0])
 
 SYSTEM_PROMPT = """You are a professional church communications assistant.
 Generate church bulletin content from the input provided.
@@ -149,11 +147,11 @@ def generate_bulletin_content(data: BulletinRequest) -> dict:
     prompt = _build_prompt(safe_input)
 
     try:
-        global model
         response = None
         for candidate in MODEL_CHAIN:
             try:
-                model = _build_model(candidate) if model.model_name != candidate else model
+                logger.info("Generating bulletin with Gemini model %s", candidate)
+                model = _build_model(candidate)
                 response = model.generate_content(prompt)
                 break
             except Exception as e:  # noqa: BLE001 — 404/retired models fall through
