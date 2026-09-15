@@ -51,16 +51,35 @@ def _esc(text: str) -> str:
     )
 
 
+import io
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+def _render_with_xhtml2pdf(html_content: str) -> bytes:
+    """Pure-Python HTML to PDF renderer using xhtml2pdf (no GTK / system deps needed)."""
+    from xhtml2pdf import pisa
+
+    out = io.BytesIO()
+    pisa_status = pisa.pisaDocument(io.BytesIO(html_content.encode("utf-8")), out)
+    if pisa_status.err:
+        raise RuntimeError(f"xhtml2pdf rendering error: {pisa_status.err}")
+    return out.getvalue()
+
+
 def generate_pdf(content: dict, input_data: dict) -> bytes:
     """Generate a print-ready PDF bulletin from AI content."""
+    # Check if WeasyPrint is available (preferred on Linux/Docker with GTK)
+    weasyprint_available = False
     try:
         from weasyprint import CSS, HTML
-    except OSError as e:
-        # WeasyPrint needs GTK native libs (present on Linux/Render; on Windows
-        # install GTK: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer)
-        raise RuntimeError(
-            "PDF engine unavailable: install GTK runtime (Windows) or deploy to Linux."
-        ) from e
+        weasyprint_available = True
+    except (OSError, ImportError) as e:
+        logger.info(
+            "WeasyPrint unavailable (%s); falling back to pure-Python xhtml2pdf engine", e
+        )
+
 
     bulletin = content["bulletin"]
     accent = input_data.get("brand_accent_color") or "#2c5282"
@@ -132,7 +151,21 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
 </body>
 </html>"""
 
-    pdf_bytes = HTML(string=html_content).write_pdf(
-        stylesheets=[CSS(string=PDF_CSS.replace("__ACCENT__", accent))]
+    css_string = PDF_CSS.replace("__ACCENT__", accent)
+    if weasyprint_available:
+        try:
+            return HTML(string=html_content).write_pdf(
+                stylesheets=[CSS(string=css_string)]
+            )
+        except Exception as e:
+            logger.warning(
+                "WeasyPrint failed to render PDF (%s); falling back to xhtml2pdf", e
+            )
+
+    # Pure-Python fallback (Windows without GTK or Linux without system dependencies)
+    styled_html = html_content.replace(
+        "<head><meta charset=\"UTF-8\"></head>",
+        f"<head><meta charset=\"UTF-8\"><style>{css_string}</style></head>",
     )
-    return pdf_bytes
+    return _render_with_xhtml2pdf(styled_html)
+
