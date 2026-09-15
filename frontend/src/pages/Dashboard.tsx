@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDays, Clock, FileText, Gift, Lock, Plus } from 'lucide-react'
+import { ArrowRight, Bell, CalendarDays, Clock, FileText, Gift, Lock, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { Navbar } from '../components/layout/Navbar'
 import { useBulletins } from '../hooks/useBulletins'
 import { useSubscription } from '../hooks/useSubscription'
-import { createCheckout } from '../lib/api'
+import { requestUpgradeInterest } from '../lib/api'
 
 export default function Dashboard() {
   const { bulletins, loading } = useBulletins()
@@ -13,9 +13,10 @@ export default function Dashboard() {
 
   const handleUpgrade = async () => {
     try {
-      await createCheckout()
+      await requestUpgradeInterest()
+      toast.success('You are on the upgrade list.')
     } catch {
-      toast.error('Could not start checkout. Please try again.')
+      toast.error('Could not save your interest. Please try again.')
     }
   }
 
@@ -50,7 +51,7 @@ export default function Dashboard() {
               onClick={handleUpgrade}
               className="btn-gold flex items-center gap-2 text-sm"
             >
-              <Lock className="w-4 h-4" /> Upgrade — $19/mo
+              <Lock className="w-4 h-4" /> Join upgrade list
             </button>
           ) : (
             <Link
@@ -72,7 +73,7 @@ export default function Dashboard() {
                   {isAtFreeLimit ? 'Free limit reached' : `${3 - freeUsed} free bulletin${3 - freeUsed === 1 ? '' : 's'} remaining`}
                 </p>
                 <p className="text-xs text-ink-muted">
-                  Upgrade for $19/month — unlimited bulletins, cancel anytime
+                  Upgrades open soon: unlimited bulletins, branding, and slide exports
                 </p>
               </div>
             </div>
@@ -80,7 +81,8 @@ export default function Dashboard() {
               onClick={handleUpgrade}
               className="btn-primary text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-95 transition-all flex-shrink-0"
             >
-              Upgrade
+              <Bell className="w-4 h-4" aria-hidden="true" />
+              Notify me
             </button>
           </div>
         )}

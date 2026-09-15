@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
 from db import supabase_admin
 from middleware.auth import verify_token
-from services.email_service import send_upgrade_confirmation
+from services.email_service import send_upgrade_confirmation, send_upgrade_interest
 from services.stripe_service import (
     create_checkout_session,
     create_portal_session,
@@ -42,6 +42,23 @@ async def create_checkout(user: dict = Depends(verify_token)):
 
     checkout_url = create_checkout_session(customer_id, user_id)
     return {"checkout_url": checkout_url}
+
+
+@router.post("/interest")
+async def request_upgrade_interest(user: dict = Depends(verify_token)):
+    """Record lightweight upgrade intent while checkout is intentionally deferred."""
+    profile = (
+        supabase_admin.table("profiles")
+        .select("email, church_name")
+        .eq("id", user["user_id"])
+        .single()
+        .execute()
+    )
+    if not profile.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    await send_upgrade_interest(profile.data["email"], profile.data.get("church_name") or "")
+    return {"ok": True}
 
 
 @router.post("/webhook")

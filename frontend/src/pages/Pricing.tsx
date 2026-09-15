@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle } from 'lucide-react'
+import { Bell, CheckCircle } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { Navbar } from '../components/layout/Navbar'
 import { Footer } from '../components/layout/Footer'
+import { useAuth } from '../hooks/useAuth'
+import { requestUpgradeInterest } from '../lib/api'
 
 const FREE_FEATURES = [
   '3 complete bulletin generations',
@@ -23,6 +26,18 @@ const PAID_FEATURES = [
 ]
 
 export default function Pricing() {
+  const { user } = useAuth()
+
+  const handleNotify = async () => {
+    if (!user) return
+    try {
+      await requestUpgradeInterest()
+      toast.success('You are on the upgrade list.')
+    } catch {
+      toast.error('Could not save your interest. Please try again.')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
@@ -33,7 +48,7 @@ export default function Pricing() {
           <p className="text-slate-600">No tiers, no add-ons, no surprises.</p>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto items-stretch">
+        <div className="grid lg:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
           {/* Free */}
           <div className="card flex flex-col">
             <div className="mb-6">
@@ -60,7 +75,7 @@ export default function Pricing() {
             </Link>
           </div>
 
-          {/* Paid */}
+          {/* Monthly */}
           <div
             className="relative bg-primary-950 bg-mesh-dark text-white rounded-2xl p-6 shadow-lift flex flex-col overflow-hidden"
           >
@@ -70,7 +85,7 @@ export default function Pricing() {
             <div className="mb-6">
               <p className="label-caps-on-dark mb-1.5">Monthly</p>
               <p className="font-display text-4xl text-white">$19</p>
-              <p className="text-primary-200 mt-1">per month, cancel anytime</p>
+              <p className="text-primary-200 mt-1">per month, opening soon</p>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {PAID_FEATURES.map((f) => (
@@ -86,9 +101,54 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            <Link to="/signup" className="btn-primary w-full">
-              Start free, upgrade later
-            </Link>
+            {user ? (
+              <button type="button" onClick={handleNotify} className="btn-primary w-full">
+                <Bell className="w-4 h-4" aria-hidden="true" />
+                Notify me
+              </button>
+            ) : (
+              <Link to="/signup" className="btn-primary w-full">
+                Start free, upgrade later
+              </Link>
+            )}
+          </div>
+
+          {/* Annual */}
+          <div className="card flex flex-col border-2 border-gold-400 relative overflow-hidden">
+            <p className="absolute top-5 right-5 text-xs font-bold tracking-wider px-3 py-1 rounded-full bg-gold-400 text-primary-950">
+              BEST VALUE
+            </p>
+            <div className="mb-6">
+              <p className="label-caps mb-1.5">Annual</p>
+              <p className="font-display text-4xl text-primary-950">$190</p>
+              <p className="text-sm text-slate-600 mt-1">2 months free, opening soon</p>
+            </div>
+            <ul className="space-y-3 mb-8 flex-1">
+              {[
+                'Everything in monthly',
+                'Best price for weekly church teams',
+                'Better for annual church budgets',
+                'One renewal instead of monthly billing',
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-slate-700">
+                  <CheckCircle
+                    className="w-4 h-4 text-primary-600 flex-shrink-0 mt-0.5"
+                    aria-hidden="true"
+                  />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            {user ? (
+              <button type="button" onClick={handleNotify} className="btn-gold w-full">
+                <Bell className="w-4 h-4" aria-hidden="true" />
+                Notify me
+              </button>
+            ) : (
+              <Link to="/signup" className="btn-gold w-full">
+                Start free, upgrade later
+              </Link>
+            )}
           </div>
         </div>
 

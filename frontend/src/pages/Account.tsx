@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ExternalLink } from 'lucide-react'
+import { Bell, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Navbar } from '../components/layout/Navbar'
 import { useAuth } from '../hooks/useAuth'
 import { useSubscription } from '../hooks/useSubscription'
-import { createCheckout, openBillingPortal } from '../lib/api'
+import { openBillingPortal, requestUpgradeInterest } from '../lib/api'
 import { supabase } from '../lib/supabase'
 
 export default function Account() {
@@ -28,9 +28,10 @@ export default function Account() {
 
   const handleCheckout = async () => {
     try {
-      await createCheckout()
+      await requestUpgradeInterest()
+      toast.success('You are on the upgrade list.')
     } catch {
-      toast.error('Could not start checkout. Please try again.')
+      toast.error('Could not save your interest. Please try again.')
     }
   }
 
@@ -97,7 +98,7 @@ export default function Account() {
                 {isPaid ? 'Active subscription' : 'Free plan'}
               </p>
               <p className="text-xs text-ink-muted mt-0.5">
-                {isPaid ? '$19/month · Cancel anytime' : '3 free bulletins total'}
+                {isPaid ? '$19/month · Cancel anytime' : '3 free bulletins total · upgrades opening soon'}
               </p>
             </div>
             {isPaid ? (
@@ -110,7 +111,8 @@ export default function Account() {
               </button>
             ) : (
               <button type="button" onClick={handleCheckout} className="btn-primary">
-                Upgrade — $19/mo
+                <Bell className="w-4 h-4" aria-hidden="true" />
+                Notify me
               </button>
             )}
           </div>

@@ -74,3 +74,22 @@ async def send_upgrade_confirmation(email: str, church_name: str = "") -> None:
 </div>
 """,
     )
+
+
+async def send_upgrade_interest(email: str, church_name: str = "") -> None:
+    """Confirm that a free user asked to hear when paid upgrades open."""
+    await _send(
+        email,
+        "You're on the ChurchPress upgrade list",
+        f"""
+<div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a;">
+  <h1 style="color: #4e2456;">You're on the list</h1>
+  <p>Thanks, {church_name or "friend"}. We'll email you when ChurchPress paid upgrades open.</p>
+  <p>The paid plan will unlock unlimited weekly bulletins, church branding, regenerate tools, and export-ready slides.</p>
+  <a href="{FRONTEND_BASE}/generate"
+    style="display: inline-block; background: #632f6d; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; margin: 20px 0;">
+    Back to ChurchPress &rarr;
+  </a>
+</div>
+""",
+    )

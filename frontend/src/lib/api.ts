@@ -83,6 +83,16 @@ export async function createCheckout() {
   window.location.href = data.checkout_url
 }
 
+export async function requestUpgradeInterest() {
+  const headers = await getAuthHeaders()
+  const res = await fetch(`${API_URL}/api/billing/interest`, {
+    method: 'POST',
+    headers,
+  })
+  if (!res.ok) throw new Error('Could not save upgrade interest')
+  return res.json() as Promise<{ ok: boolean }>
+}
+
 export async function openBillingPortal() {
   const headers = await getAuthHeaders()
   const res = await fetch(`${API_URL}/api/billing/portal`, {
