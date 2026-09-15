@@ -1,17 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from db import supabase_admin
 from middleware.auth import require_verified_user
+from middleware.security import get_client_ip
 from models.bulletin import BulletinRequest
 from services.ai_service import generate_bulletin_content
 from services.pdf_service import generate_pdf
-from services.rate_limiter import check_rate_limit
+from services.rate_limiter import check_ip_rate_limit, check_rate_limit
+from config import get_settings
 
 router = APIRouter()
+settings = get_settings()
 
 
 @router.post("/bulletin")
-async def create_bulletin(request: BulletinRequest, user: dict = Depends(require_verified_user)):
+async def create_bulletin(payload: BulletinRequest, request: Request, user: dict = Depends(require_verified_user)):
     user_id = user["user_id"]
 
     # Subscription status gates the free tier; Redis guards abuse caps.
@@ -27,11 +30,18 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
 
     is_paid = profile.data.get("subscription_status") == "active"
 
+    await check_ip_rate_limit(
+        get_client_ip(request),
+        "generate_bulletin",
+        settings.IP_GENERATION_DAILY_LIMIT,
+        86400,
+    )
+
     # Redis-backed limit check (free = 3 lifetime, paid = 200/month).
     await check_rate_limit(user_id, is_paid)
 
     try:
-        generation_input = request.model_dump()
+        generation_input = payload.model_dump()
         if profile.data.get("church_name"):
             generation_input["church_name"] = profile.data["church_name"]
         if profile.data.get("denomination"):
@@ -55,7 +65,7 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
         raise HTTPException(status_code=502, detail="Generation failed. Please try again.")
 
     # Store PDF in a private Supabase Storage bucket, one folder per user.
-    pdf_path = f"{user_id}/bulletin_{request.service_date}.pdf"
+    pdf_path = f"{user_id}/bulletin_{payload.service_date}.pdf"
     try:
         supabase_admin.storage.from_("bulletins").upload(
             path=pdf_path,
@@ -71,8 +81,8 @@ async def create_bulletin(request: BulletinRequest, user: dict = Depends(require
         .insert(
             {
                 "user_id": user_id,
-                "title": request.sermon_title,
-                "service_date": request.service_date,
+                "title": payload.sermon_title,
+                "service_date": payload.service_date,
                 "input_data": generation_input,
                 "generated_content": content,
                 "pdf_url": pdf_path,

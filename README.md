@@ -146,3 +146,6 @@ to match visible content.
 - Row Level Security on all tables; private storage bucket with per-user folders + 1-hour signed URLs
 - Church logos are stored in the private `church-assets` bucket with a 2 MB upload cap and image-only MIME allowlist
 - Free tier (3 bulletins) enforced in Redis and DB; paid tier capped at 200/month for abuse protection
+- Generation has an additional per-IP Redis ceiling (`IP_GENERATION_DAILY_LIMIT`) to limit spend from scripted abuse
+- API requests are capped by `MAX_REQUEST_BYTES`, and API responses include strict security headers and no-store caching
+- Database access uses Supabase query builders and RLS instead of raw SQL string construction

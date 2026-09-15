@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from db import supabase_admin
 from middleware.auth import verify_token
@@ -9,15 +11,10 @@ router = APIRouter()
 @router.get("/")
 async def list_bulletins(
     user: dict = Depends(verify_token),
-    limit: int = 50,
-    offset: int = 0,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
 ):
     """Get paginated bulletin history for the authenticated user."""
-    if limit > 100:
-        raise HTTPException(status_code=400, detail="Limit cannot exceed 100")
-    if limit < 1 or offset < 0:
-        raise HTTPException(status_code=400, detail="Invalid pagination")
-
     data = (
         supabase_admin.table("bulletins")
         .select("id, title, service_date, created_at, pdf_url")
@@ -30,12 +27,12 @@ async def list_bulletins(
 
 
 @router.get("/{bulletin_id}")
-async def get_bulletin(bulletin_id: str, user: dict = Depends(verify_token)):
+async def get_bulletin(bulletin_id: UUID, user: dict = Depends(verify_token)):
     """Get a specific bulletin — only the owner can access it."""
     data = (
         supabase_admin.table("bulletins")
         .select("*")
-        .eq("id", bulletin_id)
+        .eq("id", str(bulletin_id))
         .eq("user_id", user["user_id"])
         .single()
         .execute()
@@ -52,12 +49,12 @@ async def get_bulletin(bulletin_id: str, user: dict = Depends(verify_token)):
 
 
 @router.delete("/{bulletin_id}")
-async def delete_bulletin(bulletin_id: str, user: dict = Depends(verify_token)):
+async def delete_bulletin(bulletin_id: UUID, user: dict = Depends(verify_token)):
     """Delete a bulletin and its PDF."""
     data = (
         supabase_admin.table("bulletins")
         .select("id, pdf_url, user_id")
-        .eq("id", bulletin_id)
+        .eq("id", str(bulletin_id))
         .eq("user_id", user["user_id"])
         .single()
         .execute()
@@ -68,5 +65,5 @@ async def delete_bulletin(bulletin_id: str, user: dict = Depends(verify_token)):
     if data.data.get("pdf_url"):
         supabase_admin.storage.from_("bulletins").remove([data.data["pdf_url"]])
 
-    supabase_admin.table("bulletins").delete().eq("id", bulletin_id).execute()
+    supabase_admin.table("bulletins").delete().eq("id", str(bulletin_id)).eq("user_id", user["user_id"]).execute()
     return {"deleted": True}

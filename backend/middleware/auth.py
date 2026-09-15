@@ -1,5 +1,3 @@
-import os
-
 import jwt
 from fastapi import Depends, Header, HTTPException
 
@@ -28,8 +26,12 @@ async def verify_token(authorization: str = Header(...)) -> dict:
             user.user, "confirmed_at", None
         )
 
+        verified_user_id = str(getattr(user.user, "id", None) or user_id)
+        if verified_user_id != user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+
         return {
-            "user_id": user_id,
+            "user_id": verified_user_id,
             "email": user.user.email,
             "email_verified": bool(email_confirmed_at),
         }

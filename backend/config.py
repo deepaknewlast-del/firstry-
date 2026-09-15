@@ -30,6 +30,9 @@ class Settings:
     ]
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    MAX_REQUEST_BYTES: int = int(os.getenv("MAX_REQUEST_BYTES", "131072"))
+    IP_GENERATION_DAILY_LIMIT: int = int(os.getenv("IP_GENERATION_DAILY_LIMIT", "20"))
+    IP_BILLING_HOURLY_LIMIT: int = int(os.getenv("IP_BILLING_HOURLY_LIMIT", "10"))
 
     # Resend email
     RESEND_API_KEY: str = os.getenv("RESEND_API_KEY", "")

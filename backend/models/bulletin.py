@@ -1,24 +1,24 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class BulletinRequest(BaseModel):
-    church_name: str
+    church_name: str = Field(..., min_length=1, max_length=100)
     service_date: str
-    service_time: str = "10:00 AM"
-    pastor_name: Optional[str] = ""
-    sermon_title: str
-    scripture_reference: str
-    sermon_summary: Optional[str] = ""
-    announcements: List[str] = []
-    special_events: Optional[str] = ""
-    prayer_requests: Optional[str] = ""
-    offering_info: Optional[str] = ""
+    service_time: str = Field("10:00 AM", max_length=30)
+    pastor_name: Optional[str] = Field("", max_length=100)
+    sermon_title: str = Field(..., min_length=1, max_length=150)
+    scripture_reference: str = Field(..., min_length=1, max_length=100)
+    sermon_summary: Optional[str] = Field("", max_length=2000)
+    announcements: List[str] = Field(default_factory=list, max_length=10)
+    special_events: Optional[str] = Field("", max_length=1000)
+    prayer_requests: Optional[str] = Field("", max_length=1000)
+    offering_info: Optional[str] = Field("", max_length=1000)
     tone: Optional[str] = "warm and welcoming"
-    denomination: Optional[str] = ""
+    denomination: Optional[str] = Field("", max_length=80)
     brand_accent_color: Optional[str] = None
-    logo_url: Optional[str] = None
+    logo_url: Optional[str] = Field(None, max_length=2048)
 
     @field_validator("church_name", "sermon_title", "scripture_reference")
     @classmethod

@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
+from config import get_settings
 from db import supabase_admin
 from middleware.auth import verify_token
+from middleware.security import get_client_ip
 from services.email_service import send_upgrade_confirmation, send_upgrade_interest
+from services.rate_limiter import check_ip_rate_limit
 from services.stripe_service import (
     create_checkout_session,
     create_portal_session,
@@ -10,10 +13,17 @@ from services.stripe_service import (
 )
 
 router = APIRouter()
+settings = get_settings()
 
 
 @router.post("/checkout")
-async def create_checkout(user: dict = Depends(verify_token)):
+async def create_checkout(request: Request, user: dict = Depends(verify_token)):
+    await check_ip_rate_limit(
+        get_client_ip(request),
+        "billing_checkout",
+        settings.IP_BILLING_HOURLY_LIMIT,
+        3600,
+    )
     user_id = user["user_id"]
 
     profile = (
@@ -45,8 +55,14 @@ async def create_checkout(user: dict = Depends(verify_token)):
 
 
 @router.post("/interest")
-async def request_upgrade_interest(user: dict = Depends(verify_token)):
+async def request_upgrade_interest(request: Request, user: dict = Depends(verify_token)):
     """Record lightweight upgrade intent while checkout is intentionally deferred."""
+    await check_ip_rate_limit(
+        get_client_ip(request),
+        "upgrade_interest",
+        settings.IP_BILLING_HOURLY_LIMIT,
+        3600,
+    )
     profile = (
         supabase_admin.table("profiles")
         .select("email, church_name")
@@ -110,7 +126,13 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
 
 
 @router.post("/portal")
-async def billing_portal(user: dict = Depends(verify_token)):
+async def billing_portal(request: Request, user: dict = Depends(verify_token)):
+    await check_ip_rate_limit(
+        get_client_ip(request),
+        "billing_portal",
+        settings.IP_BILLING_HOURLY_LIMIT,
+        3600,
+    )
     profile = (
         supabase_admin.table("profiles")
         .select("stripe_customer_id")
