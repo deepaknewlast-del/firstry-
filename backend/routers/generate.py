@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from db import supabase_admin
@@ -9,6 +10,7 @@ from services.pdf_service import generate_pdf
 from services.rate_limiter import check_ip_rate_limit, check_rate_limit
 from config import get_settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 settings = get_settings()
 
@@ -70,10 +72,12 @@ async def create_bulletin(payload: BulletinRequest, request: Request, user: dict
         supabase_admin.storage.from_("bulletins").upload(
             path=pdf_path,
             file=pdf_bytes,
-            file_options={"content-type": "application/pdf", "upsert": True},
+            file_options={"content-type": "application/pdf", "upsert": "true"},
         )
-    except Exception:
+    except Exception as e:
+        logger.exception("Could not store PDF in Supabase storage: %s", e)
         raise HTTPException(status_code=500, detail="Could not store the generated PDF.")
+
 
     # Persist the bulletin record.
     record = (
