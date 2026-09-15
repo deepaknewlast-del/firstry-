@@ -1,0 +1,14 @@
+-- ChurchPress.ai — Seed data
+-- Optional: demo announcements/tone presets for reference. The app is fully
+-- functional without running this file.
+
+-- Example profile note: profiles are auto-created by the on_auth_user_created
+-- trigger when a user signs up via Supabase Auth. To seed a demo profile for
+-- local testing, create a user first, then:
+--
+-- UPDATE public.profiles
+-- SET church_name = 'Grace Community Church',
+--     denomination = 'Non-denominational',
+--     city = 'Austin',
+--     country = 'US'
+-- WHERE email = 'demo@churchpress.ai';

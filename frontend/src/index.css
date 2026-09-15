@@ -1,0 +1,355 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ *
+ * Base — warm paper, plum ink, 16px body.
+ * ui-ux-pro-max: Editorial Grid / Magazine + Classic Elegant.
+ * ------------------------------------------------------------------ */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    @apply bg-paper text-ink antialiased bg-paper-grain;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', Georgia, Times New Roman, serif;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    @apply text-primary-700;
+  }
+
+  /* Letterpress: headings sit slightly *into* the paper. */
+  h1,
+  h2 {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.55);
+  }
+
+  p {
+    line-height: 1.65;
+  }
+
+  /* Priority 1: focus is always visible for keyboard users. */
+  :focus-visible {
+    outline: 3px solid theme('colors.primary.400');
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background: theme('colors.gold.200');
+    color: theme('colors.primary.900');
+  }
+  ::placeholder {
+    @apply text-slate-500;
+    opacity: 1;
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  /* Thin double rule, the way a printed bulletin separates sections. */
+  hr {
+    @apply border-rule;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: #f2ebe4;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #c9aecd;
+  border: 2px solid #f2ebe4;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #8b4f96;
+}
+
+@layer components {
+  /* ---------- Typography helpers ---------- */
+  .eyebrow {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.22em] text-primary-400;
+  }
+  .eyebrow-on-dark {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.22em] text-gold-400;
+  }
+  /* Kept from the previous system so nothing silently loses its styling. */
+  .label-caps {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.18em] text-primary-700;
+  }
+  .label-caps-on-dark {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.18em] text-gold-400;
+  }
+  .lede {
+    @apply font-display text-lg sm:text-xl text-primary-800 italic;
+  }
+
+  /* Ornamental divider — a hairline with a centred lozenge. */
+  .ornament {
+    @apply flex items-center gap-3 text-gold-700;
+  }
+  .ornament::before,
+  .ornament::after {
+    content: '';
+    @apply h-px flex-1 bg-rule;
+  }
+
+  /* ---------- Buttons: raised, with a real press ---------- */
+  .btn-primary,
+  .btn-secondary,
+  .btn-gold,
+  .btn-ghost {
+    @apply relative inline-flex items-center justify-center gap-2 font-body font-semibold cursor-pointer
+           rounded-md px-6 py-3 text-base whitespace-nowrap
+           transition-[transform,box-shadow,background-color,color,border-color] duration-150 ease-out
+           focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary-400/45
+           focus-visible:ring-offset-2 focus-visible:ring-offset-paper
+           disabled:opacity-55 disabled:cursor-not-allowed disabled:shadow-none;
+    min-height: 44px;
+  }
+
+  /* Deep plum, raised off the page. */
+  .btn-primary {
+    @apply bg-primary-600 text-white border border-primary-800/30;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.18) inset,
+      0 -2px 0 rgba(0, 0, 0, 0.18) inset,
+      0 2px 4px rgba(36, 21, 40, 0.22),
+      0 10px 20px -10px rgba(36, 21, 40, 0.4);
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-primary-500;
+  }
+  .btn-primary:active:not(:disabled) {
+    @apply bg-primary-700;
+    box-shadow: theme('boxShadow.pressed');
+    transform: translateY(1px);
+  }
+
+  /* Embossed gold foil — the hand-finished seal. */
+  .btn-gold {
+    @apply bg-gold-400 text-primary-900 border border-gold-600/40 font-bold;
+    background-image: theme('backgroundImage.foil');
+    box-shadow: theme('boxShadow.foil');
+  }
+  .btn-gold:hover:not(:disabled) {
+    @apply text-primary-950;
+    filter: brightness(1.06);
+  }
+  .btn-gold:active:not(:disabled) {
+    box-shadow: theme('boxShadow.pressed');
+    transform: translateY(1px);
+  }
+
+  /* Outline — letterpress rule button. */
+  .btn-secondary {
+    @apply bg-parchment text-primary-700 border-2 border-rule-strong;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 1px 2px rgba(36, 21, 40, 0.06);
+  }
+  .btn-secondary:hover:not(:disabled) {
+    @apply bg-white border-primary-400 text-primary-800;
+    box-shadow: theme('boxShadow.raised');
+  }
+  .btn-secondary:active:not(:disabled) {
+    box-shadow: theme('boxShadow.deboss');
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-primary-700 border border-transparent;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    @apply bg-primary-50 text-primary-900;
+  }
+
+  /* ---------- Inputs: pressed into the paper ---------- */
+  .input-field {
+    @apply w-full bg-parchment text-ink rounded-md border border-rule px-4 py-3 text-base
+           placeholder:text-slate-500
+           transition-[border-color,box-shadow] duration-150
+           focus:outline-none focus:border-primary-400 focus:ring-[3px] focus:ring-primary-400/25
+           disabled:bg-cream disabled:text-slate-500;
+    box-shadow: theme('boxShadow.deboss');
+    min-height: 44px;
+  }
+  .input-field[aria-invalid='true'] {
+    @apply border-red-700 focus:border-red-700 focus:ring-red-600/25;
+  }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    @apply bg-parchment rounded-xl border border-rule-light p-6;
+    box-shadow: theme('boxShadow.paper');
+  }
+  .card-hover {
+    @apply transition-[box-shadow,transform,border-color] duration-200 ease-out;
+  }
+  .card-hover:hover {
+    box-shadow: theme('boxShadow.raised-hover');
+    @apply border-rule-strong;
+    transform: translateY(-2px);
+  }
+
+  /* Deep panels — the dark, quiet surfaces. */
+  .panel-deep {
+    @apply bg-primary-950 bg-panel-deep text-primary-100;
+  }
+
+  .avatar {
+    @apply w-10 h-10 rounded-full flex items-center justify-center font-body font-semibold
+           bg-primary-100 text-primary-700 border border-rule-strong;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset, 0 1px 2px rgba(36, 21, 40, 0.08);
+  }
+
+  /* Gold foil seal / badge. */
+  .seal {
+    @apply inline-flex items-center justify-center rounded-full text-primary-900 font-bold;
+    background-image: theme('backgroundImage.foil');
+    box-shadow: theme('boxShadow.foil');
+  }
+
+  .skip-link {
+    @apply absolute left-4 -top-24 z-toast bg-primary-700 text-white px-5 py-3 rounded-md font-semibold
+           transition-[top] duration-200 focus:top-4;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Motion — restrained. Print doesn't bounce. Disabled under
+ * prefers-reduced-motion.
+ * ------------------------------------------------------------------ */
+@keyframes cp-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes cp-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes cp-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-fade-up,
+.animate-fade-up-slow,
+.animate-fade-up-slower {
+  animation: cp-fade-up 380ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+.animate-fade-up-slow {
+  animation-delay: 70ms;
+}
+.animate-fade-up-slower {
+  animation-delay: 140ms;
+}
+.animate-fade-in {
+  animation: cp-fade-in 280ms ease both;
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  animation: cp-shimmer 1.8s infinite;
+  background: linear-gradient(90deg, transparent, rgba(139, 79, 150, 0.09), transparent);
+}
+
+.stagger > * {
+  animation: cp-fade-up 380ms cubic-bezier(0.34, 1.3, 0.64, 1) both;
+}
+.stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 180ms;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 240ms;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 300ms;
+}
+.stagger > *:nth-child(n + 7) {
+  animation-delay: 340ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .stagger > *,
+  .animate-fade-up,
+  .animate-fade-up-slow,
+  .animate-fade-up-slower,
+  .animate-fade-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .card-hover:hover,
+  .btn-primary:active:not(:disabled),
+  .btn-gold:active:not(:disabled) {
+    transform: none !important;
+  }
+}

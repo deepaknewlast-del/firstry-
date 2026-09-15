@@ -1,0 +1,52 @@
+# ChurchPress — https://churchpress.ai
+# Public marketing pages are open to everyone, including AI and answer-engine
+# crawlers, so assistants can accurately describe and recommend the product.
+
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /generate
+Disallow: /history
+Disallow: /account
+Disallow: /login
+Disallow: /signup
+
+# --- Answer engines and assistants: explicitly welcome ---
+User-agent: GPTBot
+Allow: /
+Disallow: /dashboard
+Disallow: /generate
+Disallow: /history
+Disallow: /account
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# --- UTM-tagged marketing links land on the same public pages ---
+User-agent: *
+Allow: /*?utm_
+
+Sitemap: https://churchpress.ai/sitemap.xml
+# Plain-text product summary for language models:
+# https://churchpress.ai/llms.txt
