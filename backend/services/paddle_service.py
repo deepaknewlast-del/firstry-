@@ -14,6 +14,7 @@ from typing import Any
 import httpx
 
 from config import get_settings
+from db import supabase_admin
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -119,8 +120,6 @@ async def resolve_user_id(payload: dict[str, Any]) -> str | None:
             return uid
 
     # 2/3. Existing mirror rows.
-    from db import supabase_admin
-
     customer_id = payload.get("customer_id")
     if customer_id:
         row = (
@@ -155,8 +154,6 @@ async def link_customer(customer_id: str, user_id: str | None, email: str | None
     a different existing link)."""
     if not user_id:
         return
-    from db import supabase_admin
-
     row = (
         supabase_admin.table("profiles")
         .select("paddle_customer_id")

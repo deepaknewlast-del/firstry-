@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 
@@ -392,7 +393,9 @@ async def paddle_webhook(
     try:
         await handler(event.get("data") or {}, occurred_at)
     except Exception:
-        # Non-2xx so Paddle retries the delivery (at-least-once semantics).
+        # Log the full traceback, then return non-2xx so Paddle retries
+        # the delivery (at-least-once semantics).
+        logging.getLogger(__name__).exception("Paddle webhook handler failed for %s", event_type)
         raise HTTPException(status_code=500, detail="Webhook handler failed")
 
     return {"received": True}
