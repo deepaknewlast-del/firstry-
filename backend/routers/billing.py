@@ -136,6 +136,10 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
 
 @router.post("/portal")
 async def billing_portal(request: Request, user: dict = Depends(verify_token)):
+    """Paddle customer portal (self-service: payment method, cancel, invoices).
+
+    The customer id is resolved server-side from the authenticated session's
+    profile row — never accepted from the client."""
     await check_ip_rate_limit(
         get_client_ip(request),
         "billing_portal",
@@ -144,16 +148,24 @@ async def billing_portal(request: Request, user: dict = Depends(verify_token)):
     )
     profile = (
         supabase_admin.table("profiles")
-        .select("stripe_customer_id")
+        .select("paddle_customer_id, stripe_customer_id")
         .eq("id", user["user_id"])
         .single()
         .execute()
     )
-    customer_id = profile.data.get("stripe_customer_id") if profile.data else None
+    customer_id = profile.data.get("paddle_customer_id") if profile.data else None
     if not customer_id:
-        raise HTTPException(status_code=400, detail="No billing profile yet — upgrade first")
+        raise HTTPException(
+            status_code=400,
+            detail="No billing profile yet — upgrade first, then manage billing here",
+        )
 
-    portal_url = create_portal_session(customer_id)
+    from services.paddle_service import create_portal_session as create_paddle_portal
+
+    try:
+        portal_url = await create_paddle_portal(customer_id)
+    except RuntimeError:
+        raise HTTPException(status_code=502, detail="Could not open the billing portal — try again shortly")
     return {"portal_url": portal_url}
 
 
