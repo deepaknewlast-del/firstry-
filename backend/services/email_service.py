@@ -65,7 +65,8 @@ async def send_upgrade_confirmation(email: str, church_name: str = "") -> None:
 <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a;">
   <h1 style="color: #1e40af;">You're upgraded!</h1>
   <p>Thank you for subscribing, {church_name or "friend"}. You now have unlimited bulletin generations.</p>
-  <p>Your subscription is $19/month. You can manage or cancel anytime from your
+  <p>You can review your plan details, invoices, and payment method — or cancel
+  anytime — from your
   <a href="{FRONTEND_BASE}/account" style="color: #1e40af;">account page</a>.</p>
   <a href="{FRONTEND_BASE}/generate"
     style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; margin: 20px 0;">
