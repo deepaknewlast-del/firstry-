@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@paddle/paddle-js": "^1.6.5",
     "@supabase/supabase-js": "^2.47.0",
     "date-fns": "^3.6.0",
     "lucide-react": "^0.468.0",

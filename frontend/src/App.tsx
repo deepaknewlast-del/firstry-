@@ -13,6 +13,7 @@ import Pricing from './pages/Pricing'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import { Privacy, Terms } from './pages/Legal'
+import Welcome from './pages/Welcome'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
@@ -52,6 +53,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/welcome" element={<Welcome />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />

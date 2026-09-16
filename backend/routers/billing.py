@@ -146,3 +146,10 @@ async def billing_portal(request: Request, user: dict = Depends(verify_token)):
 
     portal_url = create_portal_session(customer_id)
     return {"portal_url": portal_url}
+
+
+@router.get("/config/country")
+async def get_client_country(request: Request):
+    # Common headers set by Vercel, Cloudflare, etc.
+    country = request.headers.get("x-vercel-ip-country") or request.headers.get("cf-ipcountry")
+    return {"countryCode": country}
