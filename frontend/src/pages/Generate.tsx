@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Bell, Copy, Download, FileText, Lock, Mail, PenLine, Presentation } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { Link } from 'react-router-dom'
+import { ArrowRight, Copy, Download, FileText, Lock, Mail, PenLine, Presentation } from 'lucide-react'
 import { Navbar } from '../components/layout/Navbar'
 import { BulletinForm } from '../components/bulletin/BulletinForm'
 import { BulletinPreview } from '../components/bulletin/BulletinPreview'
 import { useSubscription } from '../hooks/useSubscription'
-import { requestUpgradeInterest } from '../lib/api'
 import type { BulletinResult } from '../lib/api'
 
 const LOCKED_OUTPUTS = [
@@ -31,21 +30,7 @@ const LOCKED_OUTPUTS = [
 
 export default function Generate() {
   const [result, setResult] = useState<BulletinResult | null>(null)
-  const [savingInterest, setSavingInterest] = useState(false)
   const { isAtFreeLimit } = useSubscription()
-
-  const handleUpgrade = async () => {
-    setSavingInterest(true)
-    try {
-      await requestUpgradeInterest()
-      toast.success('You are on the upgrade list.')
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not save your interest'
-      toast.error(message)
-    } finally {
-      setSavingInterest(false)
-    }
-  }
 
   if (isAtFreeLimit)
     return (
@@ -61,18 +46,20 @@ export default function Generate() {
               Your next bulletin is a paid feature
             </h1>
             <p className="text-ink-muted text-sm leading-relaxed">
-              You&rsquo;ve used your 3 free bulletins. Paid upgrades are opening soon; join the
-              early list and we&rsquo;ll let you know when unlimited generation is available.
+              You&rsquo;ve used your 3 free bulletins. Pro gives you unlimited bulletins for
+              $15 a month — every slide, post, and newsletter included. Cancel anytime.
             </p>
-            <button
-              type="button"
-              onClick={handleUpgrade}
-              disabled={savingInterest}
-              className="btn-primary mt-6"
+            <Link
+              to="/pricing"
+              className="btn-gold mt-6 inline-flex items-center gap-2"
             >
-              <Bell className="w-4 h-4" aria-hidden="true" />
-              {savingInterest ? 'Saving…' : 'Notify me when upgrades open'}
-            </button>
+              Upgrade to Pro <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+            <p className="mt-3">
+              <Link to="/dashboard" className="text-sm text-ink-muted hover:text-primary-700 underline">
+                Back to dashboard
+              </Link>
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
