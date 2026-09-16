@@ -6,6 +6,7 @@ secret from Developer tools > Notifications — never the API key.
 """
 import hashlib
 import hmac
+import json
 import logging
 import time
 from typing import Any
@@ -72,8 +73,6 @@ def verify_webhook_signature(raw_body: bytes, signature_header: str | None) -> d
     ).hexdigest()
     if not hmac.compare_digest(expected, h1):
         raise WebhookSignatureError("Signature mismatch")
-
-    import json
 
     try:
         event = json.loads(raw_body)
