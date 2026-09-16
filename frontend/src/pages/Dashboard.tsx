@@ -1,24 +1,13 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Bell, CalendarDays, Clock, FileText, Gift, Lock, Plus } from 'lucide-react'
+import { ArrowRight, CalendarDays, Clock, FileText, Gift, Plus } from 'lucide-react'
 import { format } from 'date-fns'
-import toast from 'react-hot-toast'
 import { Navbar } from '../components/layout/Navbar'
 import { useBulletins } from '../hooks/useBulletins'
 import { useSubscription } from '../hooks/useSubscription'
-import { requestUpgradeInterest } from '../lib/api'
 
 export default function Dashboard() {
   const { bulletins, loading } = useBulletins()
   const { profile, isPaid, isAtFreeLimit, freeUsed } = useSubscription()
-
-  const handleUpgrade = async () => {
-    try {
-      await requestUpgradeInterest()
-      toast.success('You are on the upgrade list.')
-    } catch {
-      toast.error('Could not save your interest. Please try again.')
-    }
-  }
 
   const thisMonth = bulletins.filter(
     (b) => new Date(b.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -47,12 +36,12 @@ export default function Dashboard() {
             </p>
           </div>
           {isAtFreeLimit ? (
-            <button
-              onClick={handleUpgrade}
+            <Link
+              to="/pricing"
               className="btn-gold flex items-center gap-2 text-sm"
             >
-              <Lock className="w-4 h-4" /> Join upgrade list
-            </button>
+              Upgrade <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
           ) : (
             <Link
               to="/generate"
@@ -73,17 +62,16 @@ export default function Dashboard() {
                   {isAtFreeLimit ? 'Free limit reached' : `${3 - freeUsed} free bulletin${3 - freeUsed === 1 ? '' : 's'} remaining`}
                 </p>
                 <p className="text-xs text-ink-muted">
-                  Upgrades open soon: unlimited bulletins, branding, and slide exports
+                  Pro unlocks unlimited bulletins, branding, and slide exports — cancel anytime
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleUpgrade}
-              className="btn-primary text-sm font-semibold px-5 py-2.5 rounded-xl hover:opacity-95 transition-all flex-shrink-0"
+            <Link
+              to="/pricing"
+              className="btn-gold text-sm font-semibold px-5 py-2.5 flex-shrink-0 inline-flex items-center gap-2"
             >
-              <Bell className="w-4 h-4" aria-hidden="true" />
-              Notify me
-            </button>
+              See Pro plan <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
           </div>
         )}
 
