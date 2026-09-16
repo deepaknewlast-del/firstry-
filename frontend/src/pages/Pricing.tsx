@@ -150,6 +150,9 @@ export default function Pricing() {
         successUrl: `${window.location.origin}/welcome`,
       },
       customer: user?.email ? { email: user.email } : undefined,
+      // Sent back on every webhook entity so the backend can attribute the
+      // payment to this account server-side.
+      customData: user?.id ? { user_id: user.id } : undefined,
     })
     // Reset loading after a moment (Paddle takes over UI)
     setTimeout(() => setCheckoutLoading(null), 1500)
