@@ -15,10 +15,23 @@ class Settings:
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
-    # Stripe
+    # Stripe (legacy — being replaced by Paddle)
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
     STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
     STRIPE_PRICE_ID: str = os.getenv("STRIPE_PRICE_ID", "")
+
+    # Paddle Billing — fulfillment & provisioning
+    # API key + which environment it belongs to. The signing secret is a
+    # notification-destination secret (pdl_ntfset_...), NOT the API key.
+    PADDLE_API_KEY: str = os.getenv("PADDLE_API_KEY", "")
+    PADDLE_ENVIRONMENT: str = os.getenv("PADDLE_ENVIRONMENT", "sandbox")  # sandbox | production
+    PADDLE_WEBHOOK_SECRET: str = os.getenv("PADDLE_WEBHOOK_SECRET", "")
+    PADDLE_PRICE_MONTHLY: str = os.getenv("PADDLE_PRICE_MONTHLY", "")
+    PADDLE_PRICE_ANNUAL: str = os.getenv("PADDLE_PRICE_ANNUAL", "")
+
+    # Direct Postgres connection — used by the local webhook/signature test
+    # suite (scripts/test_webhooks.py). Optional; leave empty to skip those tests.
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
 
     # Upstash Redis (REST)
     UPSTASH_REDIS_REST_URL: str = os.getenv("UPSTASH_REDIS_REST_URL", "")
@@ -40,6 +53,19 @@ class Settings:
     @property
     def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
+
+    @property
+    def paddle_api_base(self) -> str:
+        return (
+            "https://api.paddle.com"
+            if self.PADDLE_ENVIRONMENT == "production"
+            else "https://sandbox-api.paddle.com"
+        )
+
+    @property
+    def paddle_price_ids(self) -> set[str]:
+        """Price IDs that map to a paid plan (monthly + annual)."""
+        return {p for p in (self.PADDLE_PRICE_MONTHLY, self.PADDLE_PRICE_ANNUAL) if p}
 
 
 @lru_cache
