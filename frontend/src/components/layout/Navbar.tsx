@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { FileText, LayoutDashboard, LogOut, Clock, Settings, PenLine } from 'lucide-react'
 import { Logo } from '../brand/Logo'
 import { useAuth } from '../../hooks/useAuth'
+import { useSubscription } from '../../hooks/useSubscription'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -12,7 +13,9 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   const { user, signOut } = useAuth()
+  const { isPaid, loading: subLoading } = useSubscription()
   const location = useLocation()
+  const showUpgrade = Boolean(user) && !subLoading && !isPaid
 
   const handleSignOut = async () => {
     await signOut()
@@ -58,6 +61,15 @@ export function Navbar() {
             >
               <PenLine className="w-4 h-4" aria-hidden="true" /> New bulletin
             </Link>
+
+            {showUpgrade && (
+              <Link
+                to="/pricing"
+                className="ml-1.5 flex items-center text-sm font-semibold min-h-11 px-4 rounded-md btn-gold"
+              >
+                Upgrade
+              </Link>
+            )}
 
             <button
               type="button"
@@ -112,6 +124,14 @@ export function Navbar() {
               </Link>
             )
           })}
+          {showUpgrade && (
+            <Link
+              to="/pricing"
+              className="text-sm font-semibold min-h-11 inline-flex items-center px-3.5 rounded-lg whitespace-nowrap btn-gold"
+            >
+              Upgrade
+            </Link>
+          )}
         </nav>
       )}
     </header>
