@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Bell, ExternalLink, ImagePlus, Palette, Upload } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { ExternalLink, ImagePlus, Palette, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Navbar } from '../components/layout/Navbar'
 import { useAuth } from '../hooks/useAuth'
 import { useSubscription } from '../hooks/useSubscription'
-import { openBillingPortal, requestUpgradeInterest } from '../lib/api'
+import { openBillingPortal } from '../lib/api'
 import { supabase } from '../lib/supabase'
 
 const ACCENT_OPTIONS = [
@@ -89,15 +90,6 @@ export default function Account() {
       toast.success('Logo uploaded')
     }
     setUploadingLogo(false)
-  }
-
-  const handleCheckout = async () => {
-    try {
-      await requestUpgradeInterest()
-      toast.success('You are on the upgrade list.')
-    } catch {
-      toast.error('Could not save your interest. Please try again.')
-    }
   }
 
   const handlePortal = async () => {
@@ -252,7 +244,7 @@ export default function Account() {
                 {isPaid ? 'Active subscription' : 'Free plan'}
               </p>
               <p className="text-xs text-ink-muted mt-0.5">
-                {isPaid ? '$19/month · Cancel anytime' : '3 free bulletins total · upgrades opening soon'}
+                {isPaid ? 'Pro subscription · manage or cancel anytime' : '3 free bulletins total · upgrade anytime'}
               </p>
             </div>
             {isPaid ? (
@@ -264,10 +256,9 @@ export default function Account() {
                 Manage billing <ExternalLink className="w-4 h-4" aria-hidden="true" />
               </button>
             ) : (
-              <button type="button" onClick={handleCheckout} className="btn-primary">
-                <Bell className="w-4 h-4" aria-hidden="true" />
-                Notify me
-              </button>
+              <Link to="/pricing" className="btn-gold">
+                Upgrade to Pro
+              </Link>
             )}
           </div>
         </div>
