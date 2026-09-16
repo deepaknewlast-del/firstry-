@@ -18,18 +18,27 @@ export function useSubscription() {
 
   useEffect(() => {
     if (!user) {
+      setProfile(null)
       setLoading(false)
       return
     }
+    // Keep loading=true while auth resolves into a profile fetch, so paid-gate
+    // UI (e.g. the navbar Upgrade pill) never flashes for paid users.
+    setLoading(true)
+    let cancelled = false
     supabase
       .from('profiles')
       .select('church_name, denomination, brand_accent_color, logo_path, subscription_status, bulletins_generated_total')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
+        if (cancelled) return
         setProfile((data as Profile) ?? null)
         setLoading(false)
       })
+    return () => {
+      cancelled = true
+    }
   }, [user])
 
   const isPaid = profile?.subscription_status === 'active'
