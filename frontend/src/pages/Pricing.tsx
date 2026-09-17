@@ -317,7 +317,7 @@ export default function Pricing() {
         <p className="text-center text-slate-500 text-sm mt-10">
           Prices shown in your local currency. Taxes may apply.
           Questions?{' '}
-          <a href="mailto:hello@churchpress.ai" className="underline text-primary-700">
+          <a href="mailto:hello@churchbulletin.in" className="underline text-primary-700">
             Contact us
           </a>
           .

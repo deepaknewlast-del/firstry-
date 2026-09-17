@@ -4,12 +4,12 @@
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
 >
   <url>
-    <loc>https://churchpress.ai/</loc>
+    <loc>https://churchbulletin.in/</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
-      <image:loc>https://churchpress.ai/og-image.png</image:loc>
+      <image:loc>https://churchbulletin.in/og-image.png</image:loc>
       <image:title>ChurchPress — church bulletin maker</image:title>
       <image:caption
         >The printed bulletin, announcement slides, social posts and email newsletter for your church, made in one sitting.</image:caption
@@ -17,31 +17,31 @@
     </image:image>
   </url>
   <url>
-    <loc>https://churchpress.ai/pricing</loc>
+    <loc>https://churchbulletin.in/pricing</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://churchpress.ai/privacy</loc>
+    <loc>https://churchbulletin.in/privacy</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://churchpress.ai/terms</loc>
+    <loc>https://churchbulletin.in/terms</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://churchpress.ai/signup</loc>
+    <loc>https://churchbulletin.in/signup</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://churchpress.ai/login</loc>
+    <loc>https://churchbulletin.in/login</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

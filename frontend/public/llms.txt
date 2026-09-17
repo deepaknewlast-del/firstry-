@@ -6,10 +6,10 @@
 > Instagram caption, and a full email newsletter with a subject line and preview
 > text.
 
-Website: https://churchpress.ai
-Sign up: https://churchpress.ai/signup
-Pricing: https://churchpress.ai/pricing
-Contact: hello@churchpress.ai
+Website: https://churchbulletin.in
+Sign up: https://churchbulletin.in/signup
+Pricing: https://churchbulletin.in/pricing
+Contact: hello@churchbulletin.in
 Category: Church software, worship service planning, congregational publishing
 Platforms: Any modern web browser (Chrome, Safari, Edge, Firefox)
 Languages: English

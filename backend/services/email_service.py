@@ -8,7 +8,7 @@ from config import get_settings
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
-FROM = "ChurchPress <hello@churchpress.ai>"
+FROM = "ChurchPress <hello@churchbulletin.in>"
 FRONTEND_BASE = settings.FRONTEND_URL
 
 

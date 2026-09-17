@@ -173,7 +173,7 @@ def main() -> None:
 
     # Footer
     f_foot = load_font(SANS_CANDIDATES, 21)
-    draw.text((300, 534), "churchpress.ai", font=f_foot, fill=GOLD)
+    draw.text((300, 534), "churchbulletin.in", font=f_foot, fill=GOLD)
     draw.text((300, 566), "Three bulletins free — no card required.", font=f_foot, fill=(150, 126, 156))
 
     img.save(OUT, "PNG", optimize=True)

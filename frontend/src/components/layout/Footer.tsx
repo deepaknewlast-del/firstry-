@@ -22,7 +22,7 @@ export function Footer() {
           <Link to="/pricing" className={LINK_CLASS}>
             Pricing
           </Link>
-          <a href="mailto:hello@churchpress.ai" className={LINK_CLASS}>
+          <a href="mailto:hello@churchbulletin.in" className={LINK_CLASS}>
             Support
           </a>
         </nav>

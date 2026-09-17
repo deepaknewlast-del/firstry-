@@ -148,7 +148,7 @@ export function Privacy() {
       <section>
         <h2>Contact</h2>
         <p>
-          Questions about privacy: <a href="mailto:hello@churchpress.ai">hello@churchpress.ai</a>.
+          Questions about privacy: <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>.
         </p>
       </section>
     </LegalPage>
@@ -251,7 +251,7 @@ export function Terms() {
         <h2>Contact</h2>
         <p>
           Anything unclear about these terms:{' '}
-          <a href="mailto:hello@churchpress.ai">hello@churchpress.ai</a>.
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>.
         </p>
       </section>
     </LegalPage>

@@ -1,4 +1,4 @@
-# ChurchPress.ai
+# ChurchPress — churchbulletin.in
 
 AI-powered weekly bulletin and announcement generator for Protestant churches.
 One form → print-ready PDF bulletin, announcement slides, social posts, and email newsletter.

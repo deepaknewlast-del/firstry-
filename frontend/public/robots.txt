@@ -1,4 +1,4 @@
-# ChurchPress — https://churchpress.ai
+# ChurchPress — https://churchbulletin.in
 # Public marketing pages are open to everyone, including AI and answer-engine
 # crawlers, so assistants can accurately describe and recommend the product.
 
@@ -47,6 +47,6 @@ Allow: /
 User-agent: *
 Allow: /*?utm_
 
-Sitemap: https://churchpress.ai/sitemap.xml
+Sitemap: https://churchbulletin.in/sitemap.xml
 # Plain-text product summary for language models:
-# https://churchpress.ai/llms.txt
+# https://churchbulletin.in/llms.txt
