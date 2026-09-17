@@ -1,4 +1,4 @@
--- ChurchPress.ai — Church branding profile fields and private logo storage
+-- ChurchPress (churchbulletin.in) — Church branding profile fields and private logo storage
 
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS brand_accent_color TEXT DEFAULT '#4e2456',

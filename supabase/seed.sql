@@ -1,4 +1,4 @@
--- ChurchPress.ai — Seed data
+-- ChurchPress (churchbulletin.in) — Seed data
 -- Optional: demo announcements/tone presets for reference. The app is fully
 -- functional without running this file.
 
@@ -11,4 +11,4 @@
 --     denomination = 'Non-denominational',
 --     city = 'Austin',
 --     country = 'US'
--- WHERE email = 'demo@churchpress.ai';
+-- WHERE email = 'demo@churchbulletin.in';

@@ -1,4 +1,4 @@
--- ChurchPress.ai — Initial schema
+-- ChurchPress (churchbulletin.in) — Initial schema
 -- Run in Supabase SQL editor (or `supabase db push`)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
