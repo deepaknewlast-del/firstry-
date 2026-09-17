@@ -82,7 +82,7 @@ const TESTIMONIALS = [
 const FAQ = [
   {
     q: 'Is it really free to start?',
-    a: 'Yes. You can make three complete bulletins without a card. After that it is $19 per month, and you can cancel at any time.',
+    a: 'Yes. You can make three complete bulletins without a card. After that it is $15 per month, and you can cancel at any time.',
   },
   {
     q: 'How long does one bulletin take?',
@@ -153,7 +153,7 @@ export default function Landing() {
             </div>
 
             <p className="text-sm text-primary-300 mt-6">
-              No card required. $19/month after three bulletins. Cancel whenever you like.
+              No card required. $15/month after three bulletins. Cancel whenever you like.
             </p>
           </div>
         </section>
@@ -398,7 +398,7 @@ export default function Landing() {
                 MOST CHOSEN
               </span>
               <p className="label-caps mb-2">Every week</p>
-              <p className="font-display text-4xl text-primary-800 mb-1">$19</p>
+              <p className="font-display text-4xl text-primary-800 mb-1">$15</p>
               <p className="text-sm text-ink-muted mb-6">per month, cancel anytime</p>
               <ul className="space-y-2.5 text-sm text-ink-muted flex-1">
                 <li>Unlimited bulletins</li>
