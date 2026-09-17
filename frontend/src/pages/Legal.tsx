@@ -37,7 +37,15 @@ function LegalPage({
 
 export function Privacy() {
   return (
-    <LegalPage eyebrow="Legal" title="Privacy Policy" updated="15 September 2026">
+    <LegalPage eyebrow="Legal" title="Privacy Policy" updated="17 September 2026">
+      <section>
+        <h2>Who we are</h2>
+        <p>
+          ChurchPress is operated by <strong>Deepak</strong>, an individual proprietor in India.
+          This policy explains what ChurchPress collects, why, and what happens to it.
+        </p>
+      </section>
+
       <section>
         <h2>What we collect</h2>
         <p>
@@ -71,17 +79,24 @@ export function Privacy() {
             enter.
           </li>
           <li>
-            <strong>Stripe</strong> — payment processing for paid subscriptions. Card numbers never
-            reach our servers.
+            <strong>Paddle</strong> — our merchant of record for paid subscriptions. When you pay,
+            Paddle processes your payment and is the seller of the subscription; card numbers never
+            reach our servers. Paddle handles billing questions, invoices, and cancellation through
+            its customer portal, and receives the account email you signed up with solely to link
+            your payment to your ChurchPress account.{' '}
+            <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer">
+              Paddle&rsquo;s own privacy policy
+            </a>{' '}
+            covers its use of your payment details.
           </li>
           <li>
-            <strong>Resend</strong> — delivers account emails such as confirmation links.
+            <strong>Resend</strong> — delivers account emails such as sign-in links and receipts.
           </li>
           <li>
             <strong>Upstash</strong> — rate limiting, so the service stays available.
           </li>
           <li>
-            <strong>Vercel and Render</strong> — hosting for the website and the API.
+            <strong>Cloudflare and Render</strong> — hosting for the website and the API.
           </li>
         </ul>
       </section>
@@ -148,7 +163,9 @@ export function Privacy() {
       <section>
         <h2>Contact</h2>
         <p>
-          Questions about privacy: <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>.
+          Questions about privacy:{' '}
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to Deepak,
+          ChurchPress, India.
         </p>
       </section>
     </LegalPage>
@@ -157,7 +174,22 @@ export function Privacy() {
 
 export function Terms() {
   return (
-    <LegalPage eyebrow="Legal" title="Terms of Service" updated="15 September 2026">
+    <LegalPage eyebrow="Legal" title="Terms of Service" updated="17 September 2026">
+      <section>
+        <h2>Who we are</h2>
+        <p>
+          ChurchPress is operated by <strong>Deepak</strong>, an individual proprietor in India
+          (&ldquo;we&rdquo;, &ldquo;us&rdquo;). &ldquo;ChurchPress&rdquo; means this website at
+          churchbulletin.in and the bulletin service it provides.
+        </p>
+        <p>
+          Payments are handled by <strong>Paddle.com</strong>, which acts as our merchant of
+          record and is the seller of the subscription for payment purposes. Paddle processes
+          card payments, applies taxes where required, issues receipts and invoices, and runs the
+          customer portal where you manage your subscription.
+        </p>
+      </section>
+
       <section>
         <h2>The service</h2>
         <p>
@@ -180,15 +212,34 @@ export function Terms() {
         <ul>
           <li>New accounts can generate three complete bulletins at no cost, with no card.</li>
           <li>
-            After that, unlimited bulletins cost 19 USD per month, billed through Stripe until you
-            cancel.
+            After that, unlimited bulletins cost 15 US dollars per month, or the annual plan shown
+            at checkout. Prices are shown in your local currency at checkout where Paddle supports
+            it.
           </li>
           <li>
-            You can cancel at any time from your account page and keep access until the end of the
+            Subscriptions renew automatically until cancelled. Billing is handled by Paddle as
+            merchant of record; your card statement will show Paddle or ChurchPress.
+          </li>
+          <li>
+            You can cancel at any time through the billing portal on your account page, or by
+            emailing us. Cancelling stops future charges and keeps your access until the end of the
             period you have paid for.
           </li>
-          <li>Prices are in US dollars and may change with notice before your next renewal.</li>
+          <li>
+            If a renewal payment fails, we may pause paid access until it succeeds; Paddle will
+            retry the card automatically before that.
+          </li>
         </ul>
+      </section>
+
+      <section>
+        <h2>Refunds</h2>
+        <p>
+          If ChurchPress is not right for your church, email{' '}
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a> within 14 days of a
+          payment and we will refund it in full — no forms, no questions. Refunds past 14 days are
+          at our discretion. Cancelling alone does not refund the current period.
+        </p>
       </section>
 
       <section>
@@ -226,8 +277,18 @@ export function Terms() {
         <p>
           We aim to keep ChurchPress running, but we do not promise uninterrupted service. The
           service is provided as it is, without warranties beyond those the law does not allow us
-          to exclude. Plan to have your bulletin ready before Sunday rather than on the way into the
-          building.
+          to exclude. Plan to have your bulletin ready before Sunday rather than on the way into
+          the building.
+        </p>
+      </section>
+
+      <section>
+        <h2>Liability</h2>
+        <p>
+          To the extent the law allows, our total liability to you for anything arising from the
+          service is limited to the amount you paid us in the 12 months before the claim, or 20 US
+          dollars if you have not paid. We are not liable for indirect or consequential losses,
+          including the content of a bulletin you have printed or sent without reading it.
         </p>
       </section>
 
@@ -235,7 +296,16 @@ export function Terms() {
         <h2>Ending the agreement</h2>
         <p>
           You may close your account whenever you wish. We may close an account that breaches these
-          terms, and will tell you why.
+          terms, and will tell you why. If we close your account without cause while a
+          subscription is active, we refund the unused portion.
+        </p>
+      </section>
+
+      <section>
+        <h2>Governing law</h2>
+        <p>
+          These terms are governed by the laws of India. The courts of India have exclusive
+          jurisdiction over any dispute arising from them.
         </p>
       </section>
 
@@ -251,7 +321,8 @@ export function Terms() {
         <h2>Contact</h2>
         <p>
           Anything unclear about these terms:{' '}
-          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>.
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to Deepak,
+          ChurchPress, India.
         </p>
       </section>
     </LegalPage>
