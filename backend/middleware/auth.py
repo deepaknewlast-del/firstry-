@@ -3,6 +3,29 @@ from fastapi import Depends, Header, HTTPException
 
 from db import supabase_admin
 
+_MAX_TOKEN_CHARS = 4096
+
+
+def _structurally_valid_jwt(token: str) -> bool:
+    """Cheap local gate before the Supabase Auth round-trip.
+
+    A JWT is three dot-separated base64url segments. Anything else can never
+    authenticate and is rejected here, so malformed garbage costs no upstream
+    API call (unauthenticated endpoints must not be an amplification vector
+    against Supabase Auth). Signature verification itself still happens
+    server-side at Supabase — this checks shape only, never trust.
+    """
+    if not token or len(token) > _MAX_TOKEN_CHARS:
+        return False
+    parts = token.split(".")
+    if len(parts) != 3 or any(not part for part in parts):
+        return False
+    try:
+        jwt.get_unverified_header(token)
+    except jwt.PyJWTError:
+        return False
+    return True
+
 
 async def verify_token(authorization: str = Header(...)) -> dict:
     """Verify the Supabase JWT on every protected endpoint."""
@@ -10,6 +33,8 @@ async def verify_token(authorization: str = Header(...)) -> dict:
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
     token = authorization.split(" ", 1)[1]
+    if not _structurally_valid_jwt(token):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     try:
         payload = jwt.decode(token, options={"verify_signature": False})
