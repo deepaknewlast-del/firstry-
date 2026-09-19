@@ -7,7 +7,7 @@ from middleware.security import get_client_ip
 from models.bulletin import BulletinRequest
 from services.ai_service import generate_bulletin_content
 from services.pdf_service import generate_pdf
-from services.rate_limiter import check_ip_rate_limit, check_rate_limit
+from services.rate_limiter import FREE_TIER_LIMIT, check_ip_rate_limit, check_rate_limit
 from config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,20 @@ async def create_bulletin(payload: BulletinRequest, request: Request, user: dict
 
     is_paid = profile.data.get("subscription_status") == "active"
 
+    # Durable free-tier gate: the DB counter is the source of truth for the
+    # lifetime limit and is enforced regardless of Redis availability (the
+    # Redis limiter fails open when unconfigured, so it can never be the
+    # only guard on the free tier).
+    if not is_paid and (profile.data.get("bulletins_generated_total") or 0) >= FREE_TIER_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "limit_reached",
+                "message": "Free tier limit reached. Upgrade to continue.",
+                "limit": FREE_TIER_LIMIT,
+            },
+        )
+
     await check_ip_rate_limit(
         get_client_ip(request),
         "generate_bulletin",
@@ -39,7 +53,8 @@ async def create_bulletin(payload: BulletinRequest, request: Request, user: dict
         86400,
     )
 
-    # Redis-backed limit check (free = 3 lifetime, paid = 200/month).
+    # Redis-backed limit check (paid monthly cap; no-op if Redis is down —
+    # the free tier is already gated above on the durable counter).
     await check_rate_limit(user_id, is_paid)
 
     try:
