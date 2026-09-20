@@ -161,6 +161,27 @@ def _luminance(hex_color: str) -> float:
         return 0.5
 
 
+def _as_ground(brand: str) -> str:
+    """A church's colour darkened enough to sit under gold lettering.
+
+    The palette offers plum, navy, forest, burgundy, gold — all of them dark
+    enough to be a page ground once trimmed, which is what makes a church's
+    colour visible on the artwork instead of being silently replaced by gold.
+    """
+    lum = _luminance(brand)
+    if lum <= 0.22:
+        return brand
+    k = (0.16 / max(lum, 1e-6)) ** (1 / 2.2)
+    h = brand.lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    try:
+        rgb = [max(0, min(255, round(int(h[i:i + 2], 16) * k))) for i in (0, 2, 4)]
+    except ValueError:
+        return brand
+    return "#%02x%02x%02x" % tuple(rgb)
+
+
 def _render_with_xhtml2pdf(html_content: str) -> bytes:
     """Pure-Python HTML to PDF renderer (no GTK / system deps needed)."""
     from xhtml2pdf import pisa
@@ -403,15 +424,16 @@ def _hex_rgb(hex_color: str) -> str:
         return "0,0,0"
 
 
-def _build_css(theme: dict, gold: str) -> str:
-    ground_rgb = _hex_rgb(theme["ground"])
+def _build_css(theme: dict, gold: str, ground: str | None = None) -> str:
+    ground = ground or theme["ground"]
+    ground_rgb = _hex_rgb(ground)
     return (
         FONT_FACES
-        + _BASE_CSS.replace("__PRIMARY__", theme["ground"])
+        + _BASE_CSS.replace("__PRIMARY__", ground)
         .replace("__GROUND_RGB__", ground_rgb)
         .replace("__GOLD_RGB__", _hex_rgb(gold))
         .replace("__GOLD__", gold)
-        .replace("__GROUND__", theme["ground"])
+        .replace("__GROUND__", ground)
         .replace("__CREAM__", theme["cream"])
         .replace("__ART_COVER__", theme["art_cover"])
         .replace("__ART_INSIDE__", theme["art_inside"])
@@ -426,16 +448,19 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
     """Generate the print-ready, artwork-backed two-page bulletin PDF."""
     theme = _resolve_theme(input_data.get("tone"))
 
-    # Gold overlay text needs to stay light against the scrim. A church's brand
-    # color is honoured only when it is itself light enough to read on the dark
-    # ground; otherwise the tone's gold carries the text and the brand color is
-    # used where it can't hurt legibility (kept in the theme's own accents).
+    # A church's accent colour has to be visible or the setting is a lie. Dark
+    # accents (the whole palette) become the page ground, tinting the artwork
+    # and sitting behind gold lettering that stays readable; a light accent is
+    # used for the lettering itself.
     brand = (input_data.get("brand_accent_color") or "").strip()
-    gold = brand if brand and _luminance(brand) >= 0.62 else theme["gold"]
-    if not brand:
-        gold = theme["gold"]
+    if brand and _luminance(brand) >= 0.62:
+        ground, gold = theme["ground"], brand
+    elif brand:
+        ground, gold = _as_ground(brand), theme["gold"]
+    else:
+        ground, gold = theme["ground"], theme["gold"]
 
-    css = _build_css(theme, gold)
+    css = _build_css(theme, gold, ground)
     vars_ = {"kick": "Sunday Worship", "orn": theme["orn"]}
 
     html_content = f"""<!DOCTYPE html>
