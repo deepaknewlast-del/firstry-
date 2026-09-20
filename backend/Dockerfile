@@ -22,6 +22,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Register vendored display fonts system-wide so Pango/WeasyPrint can use
+# them even outside @font-face (and as reliable fallbacks).
+RUN mkdir -p /usr/share/fonts/truetype/churchpress \
+    && cp assets/fonts/*.ttf /usr/share/fonts/truetype/churchpress/ \
+    && fc-cache -f
+
 EXPOSE 10000
 # Render injects PORT; shell form so the variable expands.
 CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-10000}"]
