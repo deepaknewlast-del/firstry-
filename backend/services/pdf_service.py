@@ -245,8 +245,8 @@ def _inside_html(theme: dict, vars_: dict, content: dict, input_data: dict) -> s
 
     def section(title: str, extra_class: str = "") -> str:
         return (
-            f'<h2 class="sec {extra_class}"><span class="mid">{orn}</span>'
-            f"<span>{title}</span>"
+            f'<h2 class="sec {extra_class}"><span class="mid">{orn}</span> '
+            f"{title} "
             f'<span class="mid">{orn}</span></h2>'
         )
 
@@ -273,8 +273,8 @@ def _inside_html(theme: dict, vars_: dict, content: dict, input_data: dict) -> s
       <div class="col">
         {section("Announcements")}
         <ul class="ann-list">{announcements}</ul>
-        {section("Prayer Requests", "spaced") + f'<p class="soft">{prayer}</p>' if prayer else ''}
-        {section("Giving", "spaced") + f'<p class="soft">{offering}</p>' if offering else ''}
+        {(section("Prayer Requests", "spaced") + f'<p class="soft">{prayer}</p>') if prayer else ''}
+        {(section("Giving", "spaced") + f'<p class="soft">{offering}</p>') if offering else ''}
         {f'<div class="verse"><span class="vq">{closing}</span></div>' if closing else ''}
       </div>
     </div>
@@ -357,13 +357,13 @@ body.tone-contemporary .tag { font-family: '__HEADS__'; font-size: 10.5pt; lette
 .cols { display: table; width: 100%; table-layout: fixed; }
 .col { display: table-cell; width: 50%; vertical-align: top; }
 .col + .col { padding-left: 0.34in; }
+/* Centred on one line with a hairline under it. Side rules in a table cell
+   squeezed the title into a narrow column and broke it over three lines. */
 h2.sec { font-family: '__HEADS__'; font-size: 11.5pt; letter-spacing: 2.5px; text-transform: uppercase;
-  color: __GOLD__; margin: 0 0 9px 0; display: table; width: 100%; }
+  color: __GOLD__; margin: 0 0 10px 0; padding-bottom: 5px; text-align: center;
+  white-space: nowrap; border-bottom: 1px solid rgba(__GOLD_RGB__,0.45); }
 h2.sec.spaced { margin-top: 16px; }
-h2.sec::before, h2.sec::after { content: ""; display: table-cell; width: 45%; vertical-align: middle;
-  border-top: 1px solid __GOLD__; }
-h2.sec .mid { display: table-cell; width: 10%; text-align: center; color: __GOLD__; font-size: 9px; }
-h2.sec span:not(.mid) { display: table-cell; width: auto; white-space: normal; padding: 0 4px; }
+h2.sec .mid { color: __GOLD__; font-size: 9px; }
 .welcome { font-size: 12.5pt; line-height: 1.55; color: __CREAM__; margin: 0 0 16px 0; }
 .welcome::first-letter { font-family: '__DISPLAY__', serif; font-size: 260%; float: left;
   line-height: 0.82; padding: 2px 7px 0 0; color: __GOLD__; }

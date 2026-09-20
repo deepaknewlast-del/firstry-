@@ -35,13 +35,13 @@ SAMPLE_CONTENT = {
             "hour draw you closer to the One who first loved us."
         ),
         "order_of_service": [
-            "Prelude &amp; Welcome",
+            "Prelude & Welcome",
             "Hymn 42 — Great Is Thy Faithfulness",
             "Call to Worship — Psalm 100",
             "Scripture Reading — Luke 22:14-20",
             "Message — The Table of Grace",
             "Hymn 118 — Come, Thou Fount",
-            "Benediction &amp; Sending",
+            "Benediction & Sending",
         ],
         "sermon_section": {
             "title": "The Table of Grace",
