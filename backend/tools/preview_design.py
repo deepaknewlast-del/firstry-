@@ -79,9 +79,10 @@ p.ps { color: #98a1ad; font-family: Arial, sans-serif; font-size: 11px; text-ali
 .wrap { text-align: center; }
 .wrap span { display: block; color: #8f99a6; font-family: Arial, sans-serif; font-size: 10px;
   letter-spacing: 2px; text-transform: uppercase; margin: 6px 0 0; }
-.sheet { width: 357px; height: 462px; overflow: hidden; position: relative; background: #fff;
+.sheet { width: 340px; height: 440px; overflow: hidden; position: relative; background: #fff;
   box-shadow: 0 8px 28px rgba(0,0,0,.55); }
-.sheet > .page { transform: scale(0.4815); transform-origin: top left; }
+.tk-traditional .page, .tk-formal .page, .tk-warm .page, .tk-contemporary .page {
+  transform: scale(0.4585); transform-origin: top left; }
 """
 
 
@@ -170,16 +171,53 @@ body {{ background: #23272e; margin: 0; padding: 8px 0 0; text-align: center; }}
 <body class="tone-{key}"><div class="sheet">{page}</div></body></html>"""
 
 
+def _scope_css(css: str, tone: str) -> str:
+    """Prefix every selector with the tone's wrapper so four tones can share
+    one document (in a PDF there is only ever one tone, so it needs no scoping)."""
+    wrap = f".tk-{tone}"
+    css = css.replace("body.tone-", f"{wrap}.tone-")
+    out = []
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", css, re.S):
+        sel, body = m.group(1).strip(), m.group(2)
+        if sel.startswith("@"):
+            out.append(f"{sel}{{{body}}}")
+            continue
+        parts = []
+        for p in (s.strip() for s in sel.split(",")):
+            if p.startswith(wrap) or f".tone-" in p:
+                parts.append(p)
+            elif p == "body":
+                parts.append(wrap)
+            else:
+                parts.append(f"{wrap} {p}")
+        out.append(",".join(parts) + "{" + body + "}")
+    return "".join(out)
+
+
 def build_index() -> str:
-    links = "".join(
-        f'<li><a href="bulletin-design/{k}.html">{k}</a></li>' for k in ps.TONE_THEMES
-    )
+    """All four tones in one scrollable page: cover, then inside spread."""
+    blocks = []
+    for key, theme in ps.TONE_THEMES.items():
+        css = _scope_css(_inline_assets(ps._build_css(theme, theme["gold"])), key)
+        cover = ps._cover_html(theme, {"kick": "Sunday Worship", "orn": theme["orn"]}, SAMPLE_INPUT)
+        inside = ps._inside_html(theme, {"orn": theme["orn"]}, SAMPLE_CONTENT, SAMPLE_INPUT)
+        blocks.append(
+            f"<style>{css}</style>\n<div class='tk-{key}'>"
+            f"<h2 class='tone'>{key}</h2>"
+            f"<div class='stage'><div class='wrap'><div class='sheet'>{cover}</div>"
+            f"<span>Cover</span></div>"
+            f"<div class='wrap'><div class='sheet'>{inside}</div>"
+            f"<span>Inside spread</span></div></div></div>"
+        )
     return f"""<!DOCTYPE html><html><head><meta charset="UTF-8">
-<title>Bulletin design preview</title><style>{PREVIEW_CSS}
-body {{ text-align: center; }} a {{ color: #f0d9a0; font-family: Arial, sans-serif;
-  font-size: 15px; line-height: 2.2; }} ul {{ list-style: none; padding: 0; }}</style></head>
-<body><h1 class="pt">Bulletin designs</h1>
-<p class="ps">One file per tone — open each.</p><ul>{links}</ul></body></html>"""
+<title>Bulletin designs</title><style>{PREVIEW_CSS}
+h2.tone {{ color: #f0d9a0; font-family: Arial, sans-serif; font-size: 12px;
+  letter-spacing: 4px; text-transform: uppercase; text-align: center;
+  margin: 26px 0 12px; }}</style></head>
+<body><h1 class="pt">ChurchPress bulletin &mdash; tone designs</h1>
+<p class="ps">Every tone, cover then inside spread. Scroll to compare.</p>
+{''.join(blocks)}
+</body></html>"""
 
 
 if __name__ == "__main__":
