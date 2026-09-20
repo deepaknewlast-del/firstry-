@@ -15,3 +15,7 @@ frontend/.env.local
 # General
 .DS_Store
 *.log
+
+# Generated design previews (backend/tools/preview_design.py)
+bulletin-design.html
+bulletin-design/
