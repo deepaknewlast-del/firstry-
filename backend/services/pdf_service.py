@@ -344,46 +344,49 @@ body.tone-contemporary .tag { font-family: '__HEADS__'; font-size: 10.5pt; lette
 /* ---- inside spread ---- */
 .inside-inner { position: relative; min-height: 11in; padding: 0.6in 0.7in 0.55in 0.7in; }
 .art-inside { background-image: url('art/__ART_INSIDE__'); }
-.veil-inside { background-color: rgba(__GROUND_RGB__, 0.55); }
+/* Heavier than the cover on purpose: this page carries the reading text, so
+   the artwork keeps only enough presence to read as paper, not as a picture
+   competing with the words. */
+.veil-inside { background-color: rgba(__GROUND_RGB__, 0.82); }
 .inside-header { text-align: center; padding-bottom: 9px; margin-bottom: 16px;
   border-bottom: 1px solid __GOLD__; }
-.inside-header .church { font-family: '__HEADS__'; font-size: 15pt; font-weight: bold;
+.inside-header .church { font-family: '__HEADS__'; font-size: 17pt; font-weight: bold;
   letter-spacing: 4px; text-transform: uppercase; color: __GOLD__; }
-.inside-header .date { font-family: '__HEADS__'; font-size: 8.5pt; letter-spacing: 2.5px;
+.inside-header .date { font-family: '__HEADS__'; font-size: 9.5pt; letter-spacing: 2.5px;
   text-transform: uppercase; color: __CREAM__; margin-top: 6px; }
 .cols { display: table; width: 100%; table-layout: fixed; }
 .col { display: table-cell; width: 50%; vertical-align: top; }
 .col + .col { padding-left: 0.34in; }
-h2.sec { font-family: '__HEADS__'; font-size: 10.5pt; letter-spacing: 2.5px; text-transform: uppercase;
+h2.sec { font-family: '__HEADS__'; font-size: 11.5pt; letter-spacing: 2.5px; text-transform: uppercase;
   color: __GOLD__; margin: 0 0 9px 0; display: table; width: 100%; }
 h2.sec.spaced { margin-top: 16px; }
 h2.sec::before, h2.sec::after { content: ""; display: table-cell; width: 45%; vertical-align: middle;
   border-top: 1px solid __GOLD__; }
 h2.sec .mid { display: table-cell; width: 10%; text-align: center; color: __GOLD__; font-size: 9px; }
 h2.sec span:not(.mid) { display: table-cell; width: auto; white-space: normal; padding: 0 4px; }
-.welcome { font-size: 11pt; line-height: 1.5; color: __CREAM__; margin: 0 0 14px 0; }
+.welcome { font-size: 12.5pt; line-height: 1.55; color: __CREAM__; margin: 0 0 16px 0; }
 .welcome::first-letter { font-family: '__DISPLAY__', serif; font-size: 260%; float: left;
   line-height: 0.82; padding: 2px 7px 0 0; color: __GOLD__; }
 ul.order-list, ul.ann-list, ul.points { list-style: none; margin: 0; padding: 0; }
-li.order { padding: 4.5px 0; border-bottom: 1px dotted rgba(__GOLD_RGB__,0.55); font-size: 10.5pt;
-  color: __CREAM__; }
-li.order .what { font-weight: 600; }
-li.ann { padding: 2px 0 2px 9px; border-left: 2px solid __GOLD__; margin: 7px 0; font-size: 10pt;
+li.order { padding: 5.5px 0; border-bottom: 1px dotted rgba(__GOLD_RGB__,0.55); font-size: 11.5pt;
   line-height: 1.45; color: __CREAM__; }
-p.soft { font-size: 10pt; line-height: 1.5; color: __CREAM__; margin: 0 0 12px 0; }
+li.order .what { font-weight: 600; }
+li.ann { padding: 3px 0 3px 10px; border-left: 2px solid __GOLD__; margin: 8px 0; font-size: 11.5pt;
+  line-height: 1.5; color: __CREAM__; }
+p.soft { font-size: 11.5pt; line-height: 1.5; color: __CREAM__; margin: 0 0 14px 0; }
 .sermon-box { border: 1px solid __GOLD__; padding: 11px 12px; margin-top: 14px; text-align: center; }
-.sermon-box .st { font-family: '__HEADS__'; font-size: 12.5pt; font-weight: bold; color: __GOLD__;
+.sermon-box .st { font-family: '__HEADS__'; font-size: 14pt; font-weight: bold; color: __GOLD__;
   line-height: 1.3; }
-.sermon-box .sr { font-family: '__SCRIPT__', cursive; font-size: 12pt; color: __CREAM__; margin-top: 4px; }
-ul.points { text-align: left; margin: 9px 0 0 0; padding: 0; }
-ul.points li { font-size: 9.5pt; line-height: 1.45; color: __CREAM__; margin: 4px 0 0 14px;
+.sermon-box .sr { font-family: '__SCRIPT__', cursive; font-size: 13pt; color: __CREAM__; margin-top: 5px; }
+ul.points { text-align: left; margin: 10px 0 0 0; padding: 0; }
+ul.points li { font-size: 11pt; line-height: 1.5; color: __CREAM__; margin: 5px 0 0 15px;
   list-style: disc; }
 .verse { text-align: center; margin-top: 18px; padding-top: 10px; border-top: 1px solid rgba(__GOLD_RGB__,0.5); }
-.verse .vq { font-family: '__SCRIPT__', cursive; font-size: 14pt; color: __GOLD__; line-height: 1.5; }
-body.tone-contemporary .verse .vq { font-family: '__BODY__'; font-size: 10pt; }
+.verse .vq { font-family: '__SCRIPT__', cursive; font-size: 16pt; color: __GOLD__; line-height: 1.5; }
+body.tone-contemporary .verse .vq { font-family: '__BODY__'; font-size: 11.5pt; }
 .inside-footer { position: absolute; left: 0.7in; right: 0.7in; bottom: 0.5in;
   padding-top: 9px; border-top: 1px solid __GOLD__; text-align: center;
-  font-family: '__HEADS__'; font-size: 8.5pt; letter-spacing: 3px; text-transform: uppercase;
+  font-family: '__HEADS__'; font-size: 9.5pt; letter-spacing: 3px; text-transform: uppercase;
   color: __GOLD__; }
 .inside-footer .frule { padding: 0 10px; font-size: 9px; }
 """
