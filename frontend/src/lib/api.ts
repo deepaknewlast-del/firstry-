@@ -16,6 +16,8 @@ export interface BulletinResult {
   bulletin_id: string
   content: GeneratedContent
   pdf_url: string
+  /** Rendered images of the PDF's pages — the preview that works on phones. */
+  preview_urls?: string[]
 }
 
 export interface GeneratedContent {

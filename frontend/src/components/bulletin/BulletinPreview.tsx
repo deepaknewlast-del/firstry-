@@ -55,7 +55,43 @@ function CopyButton({
  * the church sees on screen is the file they hand out — same artwork, same
  * lettering — instead of a plain-text copy of it.
  */
-function DesignedBulletin({ pdfUrl }: { pdfUrl: string }) {
+const PAGE_LABELS = ['Cover', 'Inside spread']
+
+function DesignedBulletin({
+  pdfUrl,
+  previewUrls,
+}: {
+  pdfUrl: string
+  previewUrls?: string[]
+}) {
+  // Rendered page images are preferred: they load on phones, where a PDF in a
+  // frame shows nothing at all. Older bulletins have no images, so the PDF
+  // stays as the fallback.
+  if (previewUrls && previewUrls.length > 0) {
+    return (
+      <div className="max-w-3xl space-y-6">
+        {previewUrls.map((url, i) => (
+          <figure key={url} className="m-0">
+            <a href={url} target="_blank" rel="noopener noreferrer" className="block">
+              <img
+                src={url}
+                alt={`Your bulletin — ${PAGE_LABELS[i] ?? `page ${i + 1}`}`}
+                className="w-full rounded-2xl border border-primary-100 shadow-paper bg-white"
+              />
+            </a>
+            <figcaption className="label-caps text-[10px] mt-2">
+              {PAGE_LABELS[i] ?? `Page ${i + 1}`}
+            </figcaption>
+          </figure>
+        ))}
+        <p className="text-xs text-ink-muted">
+          This is the PDF, page for page. Tap a page to see it full size, or use{' '}
+          <span className="font-semibold">Download PDF</span> above to print it.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-3xl">
       <div className="rounded-2xl border border-primary-100 shadow-paper overflow-hidden bg-white">
@@ -75,7 +111,6 @@ function DesignedBulletin({ pdfUrl }: { pdfUrl: string }) {
         >
           Open full screen
         </a>
-        <span className="sm:hidden"> — on a phone, tap Download PDF instead.</span>
       </p>
     </div>
   )
@@ -124,7 +159,7 @@ export function BulletinPreview({
   const [tab, setTab] = useState<Tab>('bulletin')
   const [view, setView] = useState<'designed' | 'text'>('designed')
   const [copied, setCopied] = useState<string | null>(null)
-  const { content, pdf_url } = result
+  const { content, pdf_url, preview_urls } = result
 
   const copyToClipboard = async (text: string, what: string) => {
     await navigator.clipboard.writeText(text)
@@ -196,7 +231,7 @@ export function BulletinPreview({
           {pdf_url && <BulletinViewSwitch view={view} onChange={setView} />}
 
           {pdf_url && view === 'designed' ? (
-            <DesignedBulletin pdfUrl={pdf_url} />
+            <DesignedBulletin pdfUrl={pdf_url} previewUrls={preview_urls} />
           ) : (
           <div className="bg-parchment rounded-2xl border border-rule-light shadow-paper max-w-2xl px-6 sm:px-8 py-10">
           <header className="text-center pb-5 mb-6 border-b border-primary-100">
