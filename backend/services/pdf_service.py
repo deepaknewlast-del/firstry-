@@ -1,42 +1,72 @@
 PDF_CSS = """
 @page {
     size: Letter;
-    margin: 1.5cm 2cm;
+    margin: 0;
 }
 body {
-    font-family: 'Georgia', serif;
-    color: #1a1a1a;
-    font-size: 11pt;
-    line-height: 1.6;
+    font-family: 'Liberation Serif', 'DejaVu Serif', Georgia, serif;
+    color: #24292f;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    background: #faf7f2;
 }
+/* ---- Header band: full-bleed accent color ---- */
 .header {
+    background: __ACCENT__;
+    color: #ffffff;
     text-align: center;
-    border-bottom: 2px solid __ACCENT__;
-    padding-bottom: 12px;
-    margin-bottom: 20px;
+    padding: 28px 2cm 22px 2cm;
+    margin: 0 0 24px 0;
 }
 .logo {
-    max-height: 64px;
-    max-width: 160px;
+    max-height: 72px;
+    max-width: 180px;
     object-fit: contain;
     margin-bottom: 10px;
 }
 .church-name {
-    font-size: 22pt;
+    font-size: 26pt;
     font-weight: bold;
-    color: __ACCENT__;
+    letter-spacing: 1px;
+    color: #ffffff;
 }
-.date { font-size: 12pt; color: #666; margin-top: 4px; }
-.section { margin: 16px 0; }
+.date {
+    font-size: 11pt;
+    color: rgba(255,255,255,0.92);
+    margin-top: 6px;
+    letter-spacing: 0.5px;
+}
+/* ---- Content column ---- */
+.content { padding: 0 1.9cm 1.6cm 1.9cm; }
+.section { margin: 18px 0; }
 .section-title {
-    font-size: 13pt;
+    font-size: 12.5pt;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
     color: __ACCENT__;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 2px solid __ACCENT__;
     padding-bottom: 4px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
-.announcement-item { margin: 6px 0; padding-left: 12px; }
+.section p { margin: 6px 0; }
+.announcement-item {
+    margin: 5px 0;
+    padding-left: 14px;
+    border-left: 3px solid __ACCENT__;
+}
+.sermon-title { font-size: 13pt; font-weight: bold; color: #24292f; }
+.sermon-ref { font-style: italic; color: __ACCENT__; }
+ul { margin: 6px 0 6px 18px; padding: 0; }
+li { margin: 3px 0; }
+.closing {
+    margin-top: 28px;
+    text-align: center;
+    font-style: italic;
+    color: #6b7280;
+    border-top: 1px solid #e5ddd0;
+    padding-top: 14px;
+}
 """
 
 
@@ -108,6 +138,7 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
         )
 
     sermon = bulletin.get("sermon_section", {})
+    sermon_points = "".join(f"<li>{_esc(p)}</li>" for p in sermon.get("key_points", []))
     html_content = f"""
 <!DOCTYPE html>
 <html>
@@ -119,6 +150,7 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
     <div class="date">{_esc(input_data.get('service_date'))} | {_esc(input_data.get('service_time', '10:00 AM'))}</div>
 </div>
 
+<div class="content">
 <div class="section">
     <p>{_esc(bulletin.get('welcome_message', ''))}</p>
 </div>
@@ -130,10 +162,10 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
 
 <div class="section">
     <div class="section-title">Today's Message</div>
-    <strong>{_esc(sermon.get('title', ''))}</strong><br>
-    <em>{_esc(sermon.get('scripture_reference', ''))}</em>
+    <div class="sermon-title">{_esc(sermon.get('title', ''))}</div>
+    <div class="sermon-ref">{_esc(sermon.get('scripture_reference', ''))}</div>
     <ul>
-      {''.join(f'<li>{_esc(p)}</li>' for p in sermon.get('key_points', []))}
+      {sermon_points}
     </ul>
 </div>
 
@@ -145,8 +177,9 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
 {prayer_html}
 {offering_html}
 
-<div class="section" style="margin-top: 30px; text-align: center; font-style: italic; color: #555;">
+<div class="closing">
     {_esc(bulletin.get('closing_thought', ''))}
+</div>
 </div>
 </body>
 </html>"""
