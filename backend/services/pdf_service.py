@@ -1,22 +1,21 @@
-"""Bulletin PDF generation — tone-themed two-page bi-fold, WeasyPrint-first.
+"""Bulletin PDF generation — artwork-background, gold-overlay two-page bi-fold.
 
-Each bulletin is two Letter pages:
-  Page 1 (cover): Gemini-generated tone artwork (or the church's logo if
-                  they uploaded one), church name in the tone's display
-                  font, service day/time, framed in the tone's palette.
-  Page 2 (inside): two-column spread — Order of Worship with dotted
-                  leaders, sermon feature box, announcements, prayer,
-                  closing verse, and a contact footer.
+Design (per tone): one of four Gemini-generated artworks fills the whole page
+as a background; a tinted scrim keeps it legible; the bulletin text is laid
+over the top in the tone's gold, display/script/body fonts.
 
-Four tone themes mirror the exact values of the bulletin form's Tone
-dropdown: traditional, formal and reverent, warm and welcoming,
-energetic and contemporary. Each theme sets palette, display/heading/
-body fonts, and cover artwork (assets/art/<tone>.jpg).
+  Page 1 (cover): full-bleed artwork, gold double frame, church name in the
+                  tone's display font, tagline in the tone's script font
+                  (cursive for traditional/formal/warm), service date + time.
+                  If the church uploaded a logo, that replaces the artwork hero.
+  Page 2 (inside): the same artwork heavily scrimmed (reads as texture), the
+                  worship content in cream/gold — welcome, order of worship,
+                  sermon feature, announcements, prayer, giving, closing verse.
 
-Fonts are vendored in assets/fonts and registered via @font-face; the
-artwork path resolves relative to assets/ (base_url for WeasyPrint).
-If WeasyPrint is unavailable (e.g. dev machines without Pango), the
-same HTML falls back to xhtml2pdf with degraded styling.
+WeasyPrint (the production Docker image) renders this fully: background-image
+with cover sizing, gradients, path-based @font-face, flex/table layout. On a
+dev machine without Pango the import fails and xhtml2pdf renders a degraded
+version — production always uses WeasyPrint.
 """
 import io
 import logging
@@ -27,52 +26,66 @@ logger = logging.getLogger(__name__)
 ASSETS_DIR = Path(__file__).resolve().parent.parent / "assets"
 
 # ---------------------------------------------------------------------------
-# Tone themes — palette, fonts, artwork. Keys are matched by substring.
+# Tone themes — artwork, palette, fonts, ornaments. Matched by substring on the
+# bulletin form's Tone dropdown: traditional | formal and reverent |
+# warm and welcoming | energetic and contemporary.
 # ---------------------------------------------------------------------------
 TONE_THEMES = {
     "traditional": {
-        "primary": "#1c3457",
-        "accent": "#b08d3e",
-        "cream": "#f7f1e3",
+        "art": "traditional.jpg",
+        "art_cover": "traditional-cover.jpg",
+        "art_inside": "traditional-inside.jpg",
+        "ground": "#0d1a2b",       # deep ground used by the inside scrim
+        "gold": "#d7b463",
+        "cream": "#f6efdf",
         "display": "Cinzel Decorative",
         "heads": "Cinzel",
         "body": "Cormorant Garamond",
-        "art": "traditional.jpg",
+        "script": "Great Vibes",
+        "orn": "\u2726",
         "tagline": "\u201cI was glad when they said unto me, let us go into the house of the Lord.\u201d",
-        "wordmark_orn": "\u2726",
     },
     "formal": {
-        "primary": "#3b1f3e",
-        "accent": "#c5a75c",
-        "cream": "#fbf9f4",
+        "art": "formal.jpg",
+        "art_cover": "formal-cover.jpg",
+        "art_inside": "formal-inside.jpg",
+        "ground": "#1c0f1e",
+        "gold": "#d8bd76",
+        "cream": "#f8f4ea",
         "display": "Cinzel",
         "heads": "Cinzel",
         "body": "Cormorant Garamond",
-        "art": "formal.jpg",
+        "script": "Great Vibes",
+        "orn": "\u271d",
         "tagline": "\u201cHoly, holy, holy is the Lord of hosts; the whole earth is full of his glory.\u201d",
-        "wordmark_orn": "\u271d",
     },
     "warm": {
-        "primary": "#4a6741",
-        "accent": "#c98a4b",
-        "cream": "#fdf9ef",
+        "art": "warm.jpg",
+        "art_cover": "warm-cover.jpg",
+        "art_inside": "warm-inside.jpg",
+        "ground": "#1d2a1a",
+        "gold": "#e2bd7c",
+        "cream": "#fdf6e6",
         "display": "Great Vibes",
         "heads": "Cormorant Garamond",
         "body": "Cormorant Garamond",
-        "art": "warm.jpg",
+        "script": "Great Vibes",
+        "orn": "\u2767",
         "tagline": "\u201cCome to me, all who labor and are heavy laden, and I will give you rest.\u201d",
-        "wordmark_orn": "\u2767",
     },
     "contemporary": {
-        "primary": "#101c26",
-        "accent": "#e8a33d",
-        "cream": "#ffffff",
+        "art": "contemporary.jpg",
+        "art_cover": "contemporary-cover.jpg",
+        "art_inside": "contemporary-inside.jpg",
+        "ground": "#0b141c",
+        "gold": "#f0b954",
+        "cream": "#f2f4f6",
         "display": "Montserrat",
         "heads": "Montserrat",
         "body": "Montserrat",
-        "art": "contemporary.jpg",
+        "script": "Montserrat",
+        "orn": "\u2014",
         "tagline": "A place to belong. A place to believe.",
-        "wordmark_orn": "\u2014",
     },
 }
 
@@ -90,12 +103,23 @@ def _resolve_theme(tone: str | None) -> dict:
     return TONE_THEMES["warm"]  # the form's default
 
 
+def _tone_class(tone) -> str:
+    t = (tone or "").lower()
+    if "formal" in t or "reverent" in t:
+        return "tone-formal"
+    if "energetic" in t or "contemporary" in t:
+        return "tone-contemporary"
+    if "warm" in t or "welcoming" in t:
+        return "tone-warm"
+    return "tone-traditional"
+
+
 FONT_FACES = "".join(
     f"""@font-face {{
-    font-family: '{fam}';
-    font-weight: {weight};
-    font-style: {style};
-    src: url('fonts/{fname}');
+  font-family: '{fam}';
+  font-weight: {weight};
+  font-style: {style};
+  src: url('fonts/{fname}');
 }}
 """
     for fam, weight, style, fname in [
@@ -125,6 +149,18 @@ def _esc(text) -> str:
     )
 
 
+def _luminance(hex_color: str) -> float:
+    """0 (black) .. 1 (white) for a #rrggbb string; 0.5 on anything unparsable."""
+    try:
+        h = hex_color.strip().lstrip("#")
+        if len(h) == 3:
+            h = "".join(c * 2 for c in h)
+        r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+    except (ValueError, TypeError, AttributeError):
+        return 0.5
+
+
 def _render_with_xhtml2pdf(html_content: str) -> bytes:
     """Pure-Python HTML to PDF renderer (no GTK / system deps needed)."""
     from xhtml2pdf import pisa
@@ -136,191 +172,287 @@ def _render_with_xhtml2pdf(html_content: str) -> bytes:
     return out.getvalue()
 
 
-def _cover_html(theme: dict, accent: str, input_data: dict) -> str:
+# ---------------------------------------------------------------------------
+# Page markup
+# ---------------------------------------------------------------------------
+def _cover_html(theme: dict, vars_: dict, input_data: dict) -> str:
+    church = _esc(input_data.get("church_name") or "Church")
+    date = _esc(input_data.get("service_date") or "")
+    time = _esc(input_data.get("service_time") or "")
     logo_url = input_data.get("logo_url")
-    church = _esc(input_data.get("church_name", "Church"))
-    date = _esc(input_data.get("service_date", ""))
-    time = _esc(input_data.get("service_time", ""))
-    orn = theme["wordmark_orn"]
+    orn = theme["orn"]
 
-    # Logo-first cover: a church's own brand replaces the tone artwork.
-    if logo_url:
-        hero = f'<div class="logo-wrap"><img class="logo" src="{_esc(logo_url)}" alt=""></div>'
-    else:
-        hero = f'<img class="cover-art" src="art/{theme["art"]}" alt="">'
+    hero = (
+        f'<img class="logo" src="{_esc(logo_url)}" alt="">'
+        if logo_url
+        else ""
+    )
+    when = " &nbsp;<span class=\"sep\">&#9670;</span>&nbsp; ".join(
+        p for p in [date, time] if p
+    )
 
     return f"""
-<div class="page cover first">
-  <div class="cover-frame"></div>
+<section class="page cover first">
+  <div class="art art-cover"></div>
+  <div class="veil veil-cover"></div>
+  <div class="shade"></div>
+  <div class="frame"></div>
+  <div class="frame-in"></div>
   <span class="corner c1">{orn}</span><span class="corner c2">{orn}</span>
   <span class="corner c3">{orn}</span><span class="corner c4">{orn}</span>
-  {hero}
-  <div class="cover-church">{church}</div>
-  <div class="cover-rule"><span class="mid">{orn}</span></div>
-  <p class="cover-tag">{theme['tagline']}</p>
-  <div class="cover-service">
-    <div class="day">Sunday Worship</div>
-    <div class="time">{date} &nbsp;&bull;&nbsp; {time}</div>
+  <div class="cover-inner">
+    {hero}
+    <div class="kick">{_esc(vars_['kick'])}</div>
+    <h1 class="church">{church}</h1>
+    <div class="rule"><span>{orn}</span></div>
+    <p class="tag">{_esc(theme['tagline'])}</p>
+    <div class="when">{when}</div>
   </div>
-</div>
+</section>
 """
 
 
-def _inside_html(theme: dict, accent: str, content: dict, input_data: dict) -> str:
-    b = content.get("bulletin", {})
-    church = _esc(input_data.get("church_name", "Church"))
-    date = _esc(input_data.get("service_date", ""))
-    time = _esc(input_data.get("service_time", ""))
+def _inside_html(theme: dict, vars_: dict, content: dict, input_data: dict) -> str:
+    b = content.get("bulletin", {}) or {}
+    church = _esc(input_data.get("church_name") or "Church")
+    date = _esc(input_data.get("service_date") or "")
+    time = _esc(input_data.get("service_time") or "")
+    orn = theme["orn"]
 
-    sermon = b.get("sermon_section", {})
-    sermon_title = _esc(sermon.get("title") or input_data.get("sermon_title", ""))
-    sermon_ref = _esc(sermon.get("scripture_reference") or input_data.get("scripture_reference", ""))
+    sermon = b.get("sermon_section", {}) or {}
+    sermon_title = _esc(sermon.get("title") or input_data.get("sermon_title") or "")
+    sermon_ref = _esc(
+        sermon.get("scripture_reference") or input_data.get("scripture_reference") or ""
+    )
     pastor = _esc(input_data.get("pastor_name") or "")
-    ref_line = sermon_ref + (f" &bull; {pastor}" if pastor else "")
-    points = "".join(f"<li>{_esc(p)}</li>" for p in sermon.get("key_points", []))
+    ref_line = " &nbsp;&bull;&nbsp; ".join(p for p in [sermon_ref, pastor] if p)
+    points = "".join(
+        f"<li>{_esc(p)}</li>" for p in (sermon.get("key_points") or [])[:4]
+    )
 
     order_items = "".join(
-        f"<div class='order-item'><span class='what'>{_esc(i)}</span></div>"
-        for i in b.get("order_of_service", [])
+        f"<li class='order'><span class='what'>{_esc(i)}</span></li>"
+        for i in (b.get("order_of_service") or [])[:9]
     )
     announcements = "".join(
-        f"<div class='ann'>{_esc(a)}</div>" for a in b.get("announcements", [])[:4]
+        f"<li class='ann'>{_esc(a)}</li>" for a in (b.get("announcements") or [])[:4]
     )
-    prayer = _esc(b.get("prayer_requests", ""))
-    offering = _esc(b.get("offering_info", ""))
-    welcome = _esc(b.get("welcome_message", ""))
-    closing = _esc(b.get("closing_thought", ""))
+
+    welcome = _esc(b.get("welcome_message") or "")
+    prayer = _esc(b.get("prayer_requests") or "")
+    offering = _esc(b.get("offering_info") or "")
+    closing = _esc(b.get("closing_thought") or "")
+
+    def section(title: str, extra_class: str = "") -> str:
+        return (
+            f'<h2 class="sec {extra_class}"><span class="mid">{orn}</span>'
+            f"<span>{title}</span>"
+            f'<span class="mid">{orn}</span></h2>'
+        )
 
     return f"""
-<div class="page inside">
-  <div class="inside-header">
-    <div class="church">{church}</div>
-    <div class="date">{date.upper()} &nbsp;&bull;&nbsp; {time.upper()} &nbsp;&bull;&nbsp; {sermon_title.upper()}</div>
-  </div>
-  <div class="cols">
-    <div class="col">
-      <p class="welcome">{welcome}</p>
-      <h3 class="sec"><span class="mid">{theme['wordmark_orn']}</span><span>Order of Worship</span><span class="mid">{theme['wordmark_orn']}</span></h3>
-      {order_items}
-      <div class="sermon-box">
-        <div class="st">{sermon_title}</div>
-        <div class="sr">{ref_line}</div>
-        <ul>{points}</ul>
+<section class="page inside last">
+  <div class="art art-inside"></div>
+  <div class="veil veil-inside"></div>
+  <div class="inside-inner">
+    <header class="inside-header">
+      <div class="church">{church}</div>
+      <div class="date">{date} &nbsp;&bull;&nbsp; {time}</div>
+    </header>
+    <div class="cols">
+      <div class="col">
+        {f'<p class="welcome">{welcome}</p>' if welcome else ''}
+        {section("Order of Worship")}
+        <ul class="order-list">{order_items}</ul>
+        <div class="sermon-box">
+          <div class="st">{sermon_title}</div>
+          {f'<div class="sr">{ref_line}</div>' if ref_line else ''}
+          {f'<ul class="points">{points}</ul>' if points else ''}
+        </div>
+      </div>
+      <div class="col">
+        {section("Announcements")}
+        <ul class="ann-list">{announcements}</ul>
+        {section("Prayer Requests", "spaced") + f'<p class="soft">{prayer}</p>' if prayer else ''}
+        {section("Giving", "spaced") + f'<p class="soft">{offering}</p>' if offering else ''}
+        {f'<div class="verse"><span class="vq">{closing}</span></div>' if closing else ''}
       </div>
     </div>
-    <div class="col">
-      <h3 class="sec"><span class="mid">{theme['wordmark_orn']}</span><span>Announcements</span><span class="mid">{theme['wordmark_orn']}</span></h3>
-      {announcements}
-      {f"<h3 class='sec' style='margin-top:14px'><span class='mid'>{theme['wordmark_orn']}</span><span>Prayer</span><span class='mid'>{theme['wordmark_orn']}</span></h3><div class='ann soft'>{prayer}</div>" if prayer else ''}
-      {f"<h3 class='sec' style='margin-top:14px'><span class='mid'>{theme['wordmark_orn']}</span><span>Giving</span><span class='mid'>{theme['wordmark_orn']}</span></h3><div class='ann soft'>{offering}</div>" if offering else ''}
-      <div class="verse-block"><span class="vq">{closing}</span></div>
-    </div>
+    <footer class="inside-footer">
+      <span class="frule">{orn}</span>
+      {church}
+      <span class="frule">{orn}</span>
+    </footer>
   </div>
-  <div class="inside-footer">{church.upper()}</div>
-</div>
+</section>
 """
 
 
-# Base CSS shared by both pages; __PRIMARY__/__ACCENT__/__CREAM__ and the
-# font families are substituted per tone.
+# ---------------------------------------------------------------------------
+# Stylesheet — __TOKENS__ are substituted per tone.
+# ---------------------------------------------------------------------------
 _BASE_CSS = """
 @page { size: Letter; margin: 0; }
-body { margin: 0; font-family: '__BODY__', Georgia, serif; color: #2b2b2b; }
-.page { width: 8.5in; height: 11in; overflow: hidden; position: relative; background: __CREAM__; }
-.page.first { page-break-after: always; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: '__BODY__', Georgia, serif; color: __CREAM__; }
 
-/* ---------- cover ---------- */
-.cover { text-align: center; padding: 0.75in 0.85in 0.6in 0.85in; }
-.cover-frame { position: absolute; top: 0.35in; bottom: 0.35in; left: 0.35in; right: 0.35in;
-  border: 1.5px solid __ACCENT__; outline: 3px double __ACCENT__; outline-offset: 4px; }
-.corner { position: absolute; color: __ACCENT__; font-size: 15px; }
-.c1 { top: 0.22in; left: 0.28in; } .c2 { top: 0.22in; right: 0.28in; }
-.c3 { bottom: 0.22in; left: 0.28in; } .c4 { bottom: 0.22in; right: 0.28in; }
-.cover-art { width: 4.4in; height: 5.5in; object-fit: cover; margin-top: 0.35in; border: 1px solid __ACCENT__; padding: 3px; }
-body.no-logo .cover-art { width: 4.4in; }
-.logo-wrap { margin-top: 0.5in; }
-.logo { max-height: 2.2in; max-width: 5in; }
-.cover-church { font-family: '__DISPLAY__'; font-size: 30pt; font-weight: bold; letter-spacing: 2px;
-  color: __PRIMARY__; text-transform: uppercase; line-height: 1.2; margin: 0.28in 0.2in 0 0.2in; }
-body.tone-warm .cover-church { text-transform: none; letter-spacing: 1px; font-weight: normal; }
-body.tone-contemporary .cover-church { letter-spacing: 5px; font-size: 24pt; font-weight: 800; }
-.cover-rule { display: flex; align-items: center; gap: 10px; width: 2.6in; margin: 0.18in auto 0.12in auto; }
-.cover-rule::before, .cover-rule::after { content: ""; flex: 1; border-top: 1.5px solid __ACCENT__; }
-.cover-rule .mid { color: __ACCENT__; font-size: 13px; }
-.cover-tag { font-style: italic; color: #6b6255; font-size: 13pt; margin: 0 0.4in; font-family: '__BODY__', serif; }
-body.tone-warm .cover-tag { font-family: '__DISPLAY__'; font-style: normal; font-size: 17pt; color: __PRIMARY__; }
-body.tone-contemporary .cover-tag { font-style: normal; font-size: 10.5pt; letter-spacing: 2px; text-transform: uppercase; }
-.cover-service { margin-top: auto; margin-bottom: 0.3in; position: absolute; bottom: 0.55in; left: 0; right: 0; }
-.cover-service .day { font-family: '__HEADS__'; font-size: 15pt; color: __PRIMARY__; letter-spacing: 3px; text-transform: uppercase; }
-.cover-service .time { font-size: 11.5pt; color: #6b6255; margin-top: 5px; letter-spacing: 1.5px; }
+.page { position: relative; width: 8.5in; min-height: 11in; overflow: hidden; }
+.page.first { height: 11in; page-break-after: always; }
 
-/* ---------- inside ---------- */
-.inside { padding: 0.55in 0.75in 0.5in 0.75in; }
-.inside-header { text-align: center; border-bottom: 2px solid __ACCENT__; padding-bottom: 10px; margin-bottom: 18px; }
-.inside-header .church { font-family: '__HEADS__'; font-size: 15pt; letter-spacing: 3px; color: __PRIMARY__; text-transform: uppercase; font-weight: bold; }
-.inside-header .date { font-family: '__HEADS__'; font-size: 9pt; color: #6b6255; margin-top: 5px; letter-spacing: 1.5px; }
-.cols { display: flex; gap: 0.32in; }
-.col { width: 50%; }
-.col + .col { border-left: 1px solid #e3dbc8; padding-left: 0.32in; }
-h3.sec { font-family: '__HEADS__'; font-size: 11pt; letter-spacing: 2px; text-transform: uppercase; color: __PRIMARY__;
-  margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; }
-h3.sec::before, h3.sec::after { content: ""; height: 1px; background: __ACCENT__; flex: 1; }
-h3.sec .mid { color: __ACCENT__; font-size: 10px; }
-.welcome { font-size: 12pt; line-height: 1.5; margin-top: 0; }
-.welcome::first-letter { font-family: '__DISPLAY__'; font-size: 250%; float: left; line-height: 0.85; padding: 3px 6px 0 0; color: __ACCENT__; }
-.order-item { padding: 5px 0; border-bottom: 1px dotted #d8cfba; font-size: 11.5pt; }
-.order-item .what { font-weight: 600; }
-.sermon-box { background: #ffffff; border: 1px solid #e3dbc8; border-top: 3px solid __ACCENT__; padding: 12px 14px; margin-top: 12px; text-align: center; }
-.sermon-box .st { font-family: '__HEADS__'; font-size: 13.5pt; color: __PRIMARY__; font-weight: bold; }
-.sermon-box .sr { font-style: italic; color: __ACCENT__; font-size: 10.5pt; margin-top: 3px; }
-.sermon-box ul { text-align: left; margin: 8px 0 0 16px; padding: 0; font-size: 11pt; line-height: 1.55; }
-.ann { font-size: 11.5pt; padding: 5px 0 5px 10px; border-left: 2.5px solid __ACCENT__; margin: 7px 0; line-height: 1.45; }
-.ann.soft { border-left-color: #c9b98a; }
-.verse-block { text-align: center; color: #6b6255; margin-top: 14px; }
-.verse-block .vq { font-style: italic; font-size: 11.5pt; font-family: '__BODY__', serif; }
-.inside-footer { border-top: 1.5px solid __ACCENT__; margin-top: 16px; padding-top: 8px; text-align: center;
-  font-size: 9pt; color: #6b6255; letter-spacing: 1.5px; font-family: '__HEADS__'; }
+/* ---- artwork background: duotone image, then a tinted veil over it ---- */
+.art { position: absolute; top: 0; left: 0; width: 8.5in; height: 11in;
+  background-color: __GROUND__; background-size: cover; background-position: center;
+  background-repeat: no-repeat; }
+.veil { position: absolute; top: 0; left: 0; width: 8.5in; height: 11in; }
+
+/* ---- cover ---- */
+.art-cover { background-image: url('art/__ART_COVER__'); }
+.veil-cover { background-color: rgba(__GROUND_RGB__, 0.40); }
+/* Extra darkening top and bottom so the lettering never fights the artwork. */
+.shade { position: absolute; top: 0; left: 0; width: 8.5in; height: 11in;
+  background-image: linear-gradient(180deg, rgba(__GROUND_RGB__,0.80) 0%, rgba(__GROUND_RGB__,0.05) 24%, rgba(__GROUND_RGB__,0.05) 70%, rgba(__GROUND_RGB__,0.86) 100%); }
+.cover-inner { position: absolute; top: 0; left: 0; right: 0; bottom: 0; padding: 0.95in 0.9in;
+  text-align: center; }
+.frame { position: absolute; top: 0.3in; bottom: 0.3in; left: 0.3in; right: 0.3in;
+  border: 1px solid __GOLD__; }
+.frame-in { position: absolute; top: 0.4in; bottom: 0.4in; left: 0.4in; right: 0.4in;
+  border: 3px double __GOLD__; }
+.corner { position: absolute; color: __GOLD__; font-size: 14px; }
+.c1 { top: 0.2in; left: 0.26in; } .c2 { top: 0.2in; right: 0.26in; }
+.c3 { bottom: 0.2in; left: 0.26in; } .c4 { bottom: 0.2in; right: 0.26in; }
+.logo { max-height: 1.75in; max-width: 4.2in; margin-bottom: 0.28in; }
+.kick { font-family: '__HEADS__'; font-size: 10.5pt; letter-spacing: 6px; text-transform: uppercase;
+  color: __GOLD__; margin: 0.5in 0 0.22in 0; }
+.cover .church { font-family: '__DISPLAY__', '__HEADS__', serif; font-size: 34pt; font-weight: bold;
+  color: __GOLD__; letter-spacing: 3px; text-transform: uppercase; line-height: 1.28;
+  margin: 0 0.1in; }
+body.tone-warm .cover .church { text-transform: none; letter-spacing: 0; font-weight: normal;
+  font-size: 52pt; color: __GOLD__; }
+body.tone-contemporary .cover .church { letter-spacing: 7px; font-size: 26pt; font-weight: 800; }
+.rule { display: table; width: 2.8in; margin: 0.26in auto 0.2in auto; }
+.rule::before, .rule::after { content: ""; display: table-cell; width: 45%; vertical-align: middle;
+  border-top: 1px solid __GOLD__; }
+.rule span { display: table-cell; width: 10%; text-align: center; color: __GOLD__; font-size: 12px; }
+.tag { font-family: '__SCRIPT__', cursive; font-size: 20pt; line-height: 1.5; color: __CREAM__;
+  margin: 0 0.35in; }
+body.tone-contemporary .tag { font-family: '__HEADS__'; font-size: 10.5pt; letter-spacing: 3px;
+  text-transform: uppercase; color: __CREAM__; }
+.when { position: absolute; bottom: 0.72in; left: 0; right: 0; font-family: '__HEADS__';
+  font-size: 12pt; letter-spacing: 3px; text-transform: uppercase; color: __CREAM__; }
+.when .sep { color: __GOLD__; }
+
+/* ---- inside spread ---- */
+.inside-inner { position: relative; min-height: 11in; padding: 0.6in 0.7in 0.55in 0.7in; }
+.art-inside { background-image: url('art/__ART_INSIDE__'); }
+.veil-inside { background-color: rgba(__GROUND_RGB__, 0.55); }
+.inside-header { text-align: center; padding-bottom: 9px; margin-bottom: 16px;
+  border-bottom: 1px solid __GOLD__; }
+.inside-header .church { font-family: '__HEADS__'; font-size: 15pt; font-weight: bold;
+  letter-spacing: 4px; text-transform: uppercase; color: __GOLD__; }
+.inside-header .date { font-family: '__HEADS__'; font-size: 8.5pt; letter-spacing: 2.5px;
+  text-transform: uppercase; color: __CREAM__; margin-top: 6px; }
+.cols { display: table; width: 100%; table-layout: fixed; }
+.col { display: table-cell; width: 50%; vertical-align: top; }
+.col + .col { padding-left: 0.34in; }
+h2.sec { font-family: '__HEADS__'; font-size: 10.5pt; letter-spacing: 2.5px; text-transform: uppercase;
+  color: __GOLD__; margin: 0 0 9px 0; display: table; width: 100%; }
+h2.sec.spaced { margin-top: 16px; }
+h2.sec::before, h2.sec::after { content: ""; display: table-cell; width: 45%; vertical-align: middle;
+  border-top: 1px solid __GOLD__; }
+h2.sec .mid { display: table-cell; width: 10%; text-align: center; color: __GOLD__; font-size: 9px; }
+h2.sec span:not(.mid) { display: table-cell; width: auto; white-space: normal; padding: 0 4px; }
+.welcome { font-size: 11pt; line-height: 1.5; color: __CREAM__; margin: 0 0 14px 0; }
+.welcome::first-letter { font-family: '__DISPLAY__', serif; font-size: 260%; float: left;
+  line-height: 0.82; padding: 2px 7px 0 0; color: __GOLD__; }
+ul.order-list, ul.ann-list, ul.points { list-style: none; margin: 0; padding: 0; }
+li.order { padding: 4.5px 0; border-bottom: 1px dotted rgba(__GOLD_RGB__,0.55); font-size: 10.5pt;
+  color: __CREAM__; }
+li.order .what { font-weight: 600; }
+li.ann { padding: 2px 0 2px 9px; border-left: 2px solid __GOLD__; margin: 7px 0; font-size: 10pt;
+  line-height: 1.45; color: __CREAM__; }
+p.soft { font-size: 10pt; line-height: 1.5; color: __CREAM__; margin: 0 0 12px 0; }
+.sermon-box { border: 1px solid __GOLD__; padding: 11px 12px; margin-top: 14px; text-align: center; }
+.sermon-box .st { font-family: '__HEADS__'; font-size: 12.5pt; font-weight: bold; color: __GOLD__;
+  line-height: 1.3; }
+.sermon-box .sr { font-family: '__SCRIPT__', cursive; font-size: 12pt; color: __CREAM__; margin-top: 4px; }
+ul.points { text-align: left; margin: 9px 0 0 0; padding: 0; }
+ul.points li { font-size: 9.5pt; line-height: 1.45; color: __CREAM__; margin: 4px 0 0 14px;
+  list-style: disc; }
+.verse { text-align: center; margin-top: 18px; padding-top: 10px; border-top: 1px solid rgba(__GOLD_RGB__,0.5); }
+.verse .vq { font-family: '__SCRIPT__', cursive; font-size: 14pt; color: __GOLD__; line-height: 1.5; }
+body.tone-contemporary .verse .vq { font-family: '__BODY__'; font-size: 10pt; }
+.inside-footer { position: absolute; left: 0.7in; right: 0.7in; bottom: 0.5in;
+  padding-top: 9px; border-top: 1px solid __GOLD__; text-align: center;
+  font-family: '__HEADS__'; font-size: 8.5pt; letter-spacing: 3px; text-transform: uppercase;
+  color: __GOLD__; }
+.inside-footer .frule { padding: 0 10px; font-size: 9px; }
 """
+
+
+def _hex_rgb(hex_color: str) -> str:
+    """'#1c3457' -> '28,52,87' for rgba() use in the stylesheet."""
+    h = (hex_color or "#000000").strip().lstrip("#")
+    if len(h) == 3:
+        h = "".join(c * 2 for c in h)
+    try:
+        return ",".join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4))
+    except ValueError:
+        return "0,0,0"
+
+
+def _build_css(theme: dict, gold: str) -> str:
+    ground_rgb = _hex_rgb(theme["ground"])
+    return (
+        FONT_FACES
+        + _BASE_CSS.replace("__PRIMARY__", theme["ground"])
+        .replace("__GROUND_RGB__", ground_rgb)
+        .replace("__GOLD_RGB__", _hex_rgb(gold))
+        .replace("__GOLD__", gold)
+        .replace("__GROUND__", theme["ground"])
+        .replace("__CREAM__", theme["cream"])
+        .replace("__ART_COVER__", theme["art_cover"])
+        .replace("__ART_INSIDE__", theme["art_inside"])
+        .replace("__DISPLAY__", theme["display"])
+        .replace("__HEADS__", theme["heads"])
+        .replace("__BODY__", theme["body"])
+        .replace("__SCRIPT__", theme["script"])
+    )
 
 
 def generate_pdf(content: dict, input_data: dict) -> bytes:
-    """Generate a print-ready, tone-themed two-page bulletin PDF."""
+    """Generate the print-ready, artwork-backed two-page bulletin PDF."""
     theme = _resolve_theme(input_data.get("tone"))
-    # A church-set brand color overrides the theme accent.
-    accent = input_data.get("brand_accent_color") or theme["accent"]
-    has_logo = bool(input_data.get("logo_url"))
 
-    css = (
-        FONT_FACES
-        + (_BASE_CSS
-           .replace("__PRIMARY__", theme["primary"])
-           .replace("__ACCENT__", accent)
-           .replace("__CREAM__", theme["cream"])
-           .replace("__DISPLAY__", theme["display"])
-           .replace("__HEADS__", theme["heads"])
-           .replace("__BODY__", theme["body"]))
-    )
-    if not has_logo:
-        css = css.replace("__CREAM__ }}", "__CREAM__ }}")  # no-op safeguard
+    # Gold overlay text needs to stay light against the scrim. A church's brand
+    # color is honoured only when it is itself light enough to read on the dark
+    # ground; otherwise the tone's gold carries the text and the brand color is
+    # used where it can't hurt legibility (kept in the theme's own accents).
+    brand = (input_data.get("brand_accent_color") or "").strip()
+    gold = brand if brand and _luminance(brand) >= 0.62 else theme["gold"]
+    if not brand:
+        gold = theme["gold"]
+
+    css = _build_css(theme, gold)
+    vars_ = {"kick": "Sunday Worship", "orn": theme["orn"]}
 
     html_content = f"""<!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><style>{css}</style></head>
-<body class="tone-{_tone_class(input_data.get('tone'))} {'no-logo' if not has_logo else ''}">
-{_cover_html(theme, accent, input_data)}
-{_inside_html(theme, accent, content, input_data)}
+<head><meta charset="UTF-8"><title>{_esc(input_data.get('church_name') or 'Bulletin')}</title>
+<style>{css}</style></head>
+<body class="{_tone_class(input_data.get('tone'))}">
+{_cover_html(theme, vars_, input_data)}
+{_inside_html(theme, vars_, content, input_data)}
 </body>
 </html>"""
 
-    # WeasyPrint (production Docker image): full CSS — fonts, flex, drop caps.
-    # The CSS is already embedded in <head>; passing it also as a stylesheet
-    # is harmless duplication that keeps the stylesheet authoritative.
+    # WeasyPrint (production Docker image): full CSS — background art, gradients,
+    # vendored @font-face, table layout, drop caps.
     try:
         from weasyprint import CSS, HTML
 
-        return HTML(
-            string=html_content, base_url=str(ASSETS_DIR)
-        ).write_pdf(stylesheets=[CSS(string=css, base_url=str(ASSETS_DIR))])
+        return HTML(string=html_content, base_url=str(ASSETS_DIR)).write_pdf(
+            stylesheets=[CSS(string=css, base_url=str(ASSETS_DIR))]
+        )
     except (OSError, ImportError) as e:
         logger.info("WeasyPrint unavailable (%s); falling back to xhtml2pdf", e)
     except Exception as e:
@@ -329,14 +461,3 @@ def generate_pdf(content: dict, input_data: dict) -> bytes:
     # Pure-Python fallback (dev machines without Pango). Styling degrades;
     # production always renders with WeasyPrint.
     return _render_with_xhtml2pdf(html_content)
-
-
-def _tone_class(tone) -> str:
-    t = (tone or "").lower()
-    if "formal" in t or "reverent" in t:
-        return "tone-formal"
-    if "energetic" in t or "contemporary" in t:
-        return "tone-contemporary"
-    if "warm" in t or "welcoming" in t:
-        return "tone-warm"
-    return "tone-traditional"
