@@ -28,7 +28,9 @@ ART_DIR = Path(__file__).resolve().parents[1] / "assets" / "art"
 # "inside" is texture only, well behind the worship text.
 VARIANTS = {
     "cover": dict(to_gold=0.72, brightness=0.88, contrast=1.12),
-    "inside": dict(to_gold=0.26, brightness=0.80, contrast=1.05),
+    # The inside page carries the reading text under a heavy veil, so its art is
+    # kept a touch brighter — it still has to register as texture through it.
+    "inside": dict(to_gold=0.38, brightness=1.0, contrast=1.05),
 }
 
 
