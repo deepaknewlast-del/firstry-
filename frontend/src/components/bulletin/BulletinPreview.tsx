@@ -50,6 +50,70 @@ function CopyButton({
   )
 }
 
+/**
+ * The generated bulletin, as it will print. The PDF is rendered inline, so what
+ * the church sees on screen is the file they hand out — same artwork, same
+ * lettering — instead of a plain-text copy of it.
+ */
+function DesignedBulletin({ pdfUrl }: { pdfUrl: string }) {
+  return (
+    <div className="max-w-3xl">
+      <div className="rounded-2xl border border-primary-100 shadow-paper overflow-hidden bg-white">
+        <iframe
+          src={`${pdfUrl}#view=FitH`}
+          title="Your bulletin, ready to print"
+          className="w-full h-[74vh] min-h-[520px] block border-0"
+        />
+      </div>
+      <p className="text-xs text-ink-muted mt-3">
+        Two pages, sized for a folded half-letter bulletin.{' '}
+        <a
+          href={pdfUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary-700"
+        >
+          Open full screen
+        </a>
+        <span className="sm:hidden"> — on a phone, tap Download PDF instead.</span>
+      </p>
+    </div>
+  )
+}
+
+/** Designed view (the real PDF) or the plain text, for copying into anything. */
+function BulletinViewSwitch({
+  view,
+  onChange,
+}: {
+  view: 'designed' | 'text'
+  onChange: (v: 'designed' | 'text') => void
+}) {
+  const options: { id: 'designed' | 'text'; label: string }[] = [
+    { id: 'designed', label: 'Designed bulletin' },
+    { id: 'text', label: 'Text only' },
+  ]
+  return (
+    <div className="flex flex-wrap gap-1 bg-primary-50 p-1 rounded-xl w-fit mb-5 border border-primary-100">
+      {options.map(({ id, label }) => (
+        <button
+          key={id}
+          type="button"
+          aria-pressed={view === id}
+          onClick={() => onChange(id)}
+          className={`min-h-11 px-4 rounded-lg text-sm font-medium transition-colors ${
+            view === id
+              ? 'bg-white text-primary-800 shadow-sm'
+              : 'text-slate-600 hover:text-primary-800'
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export function BulletinPreview({
   result,
   onReset,
@@ -58,6 +122,7 @@ export function BulletinPreview({
   onReset: () => void
 }) {
   const [tab, setTab] = useState<Tab>('bulletin')
+  const [view, setView] = useState<'designed' | 'text'>('designed')
   const [copied, setCopied] = useState<string | null>(null)
   const { content, pdf_url } = result
 
@@ -125,14 +190,15 @@ export function BulletinPreview({
         })}
       </div>
 
-      {/* Bulletin — a paper sheet */}
+      {/* Bulletin — the designed PDF, or the text behind it */}
       {tab === 'bulletin' && (
-        <div
-          role="tabpanel"
-          id="panel-bulletin"
-          aria-labelledby="tab-bulletin"
-          className="bg-parchment rounded-2xl border border-rule-light shadow-paper max-w-2xl px-6 sm:px-8 py-10"
-        >
+        <div role="tabpanel" id="panel-bulletin" aria-labelledby="tab-bulletin">
+          {pdf_url && <BulletinViewSwitch view={view} onChange={setView} />}
+
+          {pdf_url && view === 'designed' ? (
+            <DesignedBulletin pdfUrl={pdf_url} />
+          ) : (
+          <div className="bg-parchment rounded-2xl border border-rule-light shadow-paper max-w-2xl px-6 sm:px-8 py-10">
           <header className="text-center pb-5 mb-6 border-b border-primary-100">
             <h2 className="font-display text-2xl sm:text-3xl text-primary-800">
               {content.bulletin.header}
@@ -235,6 +301,8 @@ export function BulletinPreview({
               }
             />
           </div>
+          </div>
+          )}
         </div>
       )}
 
