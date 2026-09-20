@@ -19,7 +19,7 @@ services:
       - key: FRONTEND_URL
         value: https://churchbulletin.in
       - key: ALLOWED_ORIGINS
-        value: https://churchbulletin.in,https://www.churchbulletin.in
+        value: https://churchbulletin.in,https://www.churchbulletin.in,https://firstry-1uo.pages.dev
       - key: MAX_REQUEST_BYTES
         value: "131072"
       - key: IP_GENERATION_DAILY_LIMIT
