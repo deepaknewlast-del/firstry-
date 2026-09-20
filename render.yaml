@@ -4,11 +4,10 @@
 services:
   - type: web
     name: churchpress-api
-    runtime: python
+    runtime: docker
     plan: free
     rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    dockerfilePath: backend/Dockerfile
     healthCheckPath: /health
     envVars:
       # --- fixed values ---
