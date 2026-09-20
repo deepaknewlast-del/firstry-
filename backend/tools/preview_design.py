@@ -79,10 +79,10 @@ p.ps { color: #98a1ad; font-family: Arial, sans-serif; font-size: 11px; text-ali
 .wrap { text-align: center; }
 .wrap span { display: block; color: #8f99a6; font-family: Arial, sans-serif; font-size: 10px;
   letter-spacing: 2px; text-transform: uppercase; margin: 6px 0 0; }
-.sheet { width: 340px; height: 440px; overflow: hidden; position: relative; background: #fff;
+.sheet { width: 424px; height: 549px; overflow: hidden; position: relative; background: #fff;
   box-shadow: 0 8px 28px rgba(0,0,0,.55); }
 .tk-traditional .page, .tk-formal .page, .tk-warm .page, .tk-contemporary .page {
-  transform: scale(0.4585); transform-origin: top left; }
+  transform: scale(0.5196); transform-origin: top left; }
 """
 
 
@@ -152,22 +152,40 @@ def build_tone(key: str, theme: dict) -> str:
 </body></html>"""
 
 
-def build_focus(key: str, theme: dict, which: str = "inside") -> str:
-    """A single page, for reviewing one sheet at a time."""
+SHELL_100 = """body { background: #23272e; margin: 0; padding: 8px 0 0; }
+.sheet { width: 408px; height: 1056px; overflow: hidden; position: relative;
+  margin: 0 auto; background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+.sheet > .page { transform: none; }
+"""
+
+SHELL_FIT = """body { background: #23272e; margin: 0; padding: 8px 0 0; }
+.sheet { width: 424px; height: 549px; overflow: hidden; position: relative;
+  margin: 0 auto; background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.6); }
+.sheet > .page { transform: scale(0.5196); transform-origin: top left; }
+"""
+
+
+def build_focus(key: str, theme: dict, which: str = "inside", zoom: str = "fit") -> str:
+    """A single page: scaled to fit, or at true print size for a readability check.
+
+    'size' shows the left column at 100% — the exact type size that comes out of
+    the printer, which a half-scale page preview cannot answer.
+    """
     css = _inline_assets(ps._build_css(theme, theme["gold"]))
     page = (
         ps._cover_html(theme, {"kick": "Sunday Worship", "orn": theme["orn"]}, SAMPLE_INPUT)
         if which == "cover"
         else ps._inside_html(theme, {"orn": theme["orn"]}, SAMPLE_CONTENT, SAMPLE_INPUT)
     )
+    if zoom == "size":
+        # 408px = the 8.5in page at 96dpi, cropped to the left column's width, so
+        # the type is shown at exactly the size the printer produces.
+        shell = SHELL_100
+    else:
+        shell = SHELL_FIT
     return f"""<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>{key} — {which}</title>
-<style>{css}</style><style>
-body {{ background: #23272e; margin: 0; padding: 8px 0 0; text-align: center; }}
-.sheet {{ width: 429px; height: 555px; overflow: hidden; position: relative; margin: 0 auto;
-  background: #fff; box-shadow: 0 8px 30px rgba(0,0,0,.6); }}
-.sheet > .page {{ transform: scale(0.5787); transform-origin: top left; }}
-</style></head>
+<html><head><meta charset="UTF-8"><title>{key} — {which} — {zoom}</title>
+<style>{css}</style><style>{shell}</style></head>
 <body class="tone-{key}"><div class="sheet">{page}</div></body></html>"""
 
 
@@ -224,10 +242,11 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2 and sys.argv[1] == "focus":
         key = sys.argv[2] if len(sys.argv) > 2 else "traditional"
         which = sys.argv[3] if len(sys.argv) > 3 else "inside"
+        zoom = sys.argv[4] if len(sys.argv) > 4 else "fit"
         out = REPO_ROOT / "bulletin-design" / "focus.html"
         out.parent.mkdir(exist_ok=True)
-        out.write_text(build_focus(key, ps.TONE_THEMES[key], which), encoding="utf-8")
-        print(f"wrote {out} ({key} / {which})")
+        out.write_text(build_focus(key, ps.TONE_THEMES[key], which, zoom), encoding="utf-8")
+        print(f"wrote {out} ({key} / {which} / {zoom})")
         raise SystemExit(0)
 
     (REPO_ROOT / "bulletin-design").mkdir(exist_ok=True)
