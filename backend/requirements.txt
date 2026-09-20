@@ -10,3 +10,5 @@ python-dotenv==1.0.1
 pydantic==2.11.7
 resend==1.0.1
 xhtml2pdf==0.2.19
+# Page previews: pypdfium2 is BSD-licensed (pdfium), unlike AGPL alternatives.
+pypdfium2==4.30.0

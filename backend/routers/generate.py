@@ -7,6 +7,7 @@ from middleware.security import get_client_ip
 from models.bulletin import BulletinRequest
 from services.ai_service import generate_bulletin_content
 from services.pdf_service import generate_pdf
+from services.preview_service import render_page_images
 from services.rate_limiter import FREE_TIER_LIMIT, check_ip_rate_limit, check_rate_limit
 from config import get_settings
 
@@ -117,11 +118,30 @@ async def create_bulletin(payload: BulletinRequest, request: Request, user: dict
         {"bulletins_generated_total": profile.data["bulletins_generated_total"] + 1}
     ).eq("id", user_id).execute()
 
-    # Signed URL for immediate download (expires in 1 hour).
+    # Signed URLs for immediate viewing (expire in 1 hour).
     signed = supabase_admin.storage.from_("bulletins").create_signed_url(pdf_path, 3600)
+
+    # Page images for the in-app preview — the app shows these rather than an
+    # embedded PDF, which phones cannot display.
+    preview_urls: list[str] = []
+    for index, image in enumerate(render_page_images(pdf_bytes), start=1):
+        image_path = f"{user_id}/bulletin_{payload.service_date}_p{index}.webp"
+        try:
+            supabase_admin.storage.from_("bulletins").upload(
+                path=image_path,
+                file=image,
+                file_options={"content-type": "image/webp", "upsert": "true"},
+            )
+            shot = supabase_admin.storage.from_("bulletins").create_signed_url(image_path, 3600)
+            if shot.get("signedURL"):
+                preview_urls.append(shot["signedURL"])
+        except Exception as e:
+            logger.warning("Could not store preview page %s: %s", index, e)
+            break
 
     return {
         "bulletin_id": bulletin_id,
         "content": content,
         "pdf_url": signed.get("signedURL"),
+        "preview_urls": preview_urls,
     }
