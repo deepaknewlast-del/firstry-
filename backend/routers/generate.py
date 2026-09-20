@@ -144,4 +144,8 @@ async def create_bulletin(payload: BulletinRequest, request: Request, user: dict
         "content": content,
         "pdf_url": signed.get("signedURL"),
         "preview_urls": preview_urls,
+        # The design decisions this bulletin was made with (tone, accent colour,
+        # church name, logo) so the app can show its other outputs in the same
+        # design instead of a neutral one.
+        "input_data": generation_input,
     }

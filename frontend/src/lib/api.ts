@@ -18,6 +18,14 @@ export interface BulletinResult {
   pdf_url: string
   /** Rendered images of the PDF's pages — the preview that works on phones. */
   preview_urls?: string[]
+  /** The design choices this bulletin was generated with. */
+  input_data?: {
+    tone?: string
+    brand_accent_color?: string
+    church_name?: string
+    logo_url?: string
+    [key: string]: unknown
+  }
 }
 
 export interface GeneratedContent {

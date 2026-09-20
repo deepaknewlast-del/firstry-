@@ -3,15 +3,20 @@ import {
   CheckCircle,
   Copy,
   Download,
-  Facebook,
   FileText,
-  Instagram,
   Mail,
   Plus,
   Presentation,
   Share2,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import {
+  EmailPanel,
+  SlidesPanel,
+  SocialPanel,
+  type BulletinDesign,
+} from './OutputPanels'
+import type { CoverTone } from './BulletinCoverPreview'
 import type { BulletinResult } from '../../lib/api'
 
 type Tab = 'bulletin' | 'slides' | 'social' | 'email'
@@ -159,7 +164,15 @@ export function BulletinPreview({
   const [tab, setTab] = useState<Tab>('bulletin')
   const [view, setView] = useState<'designed' | 'text'>('designed')
   const [copied, setCopied] = useState<string | null>(null)
-  const { content, pdf_url, preview_urls } = result
+  const { content, pdf_url, preview_urls, input_data } = result
+
+  // The design this bulletin was generated with, so the slides, posts and
+  // newsletter come out in the same one rather than a neutral house style.
+  const design: BulletinDesign = {
+    tone: (input_data?.tone as CoverTone) || 'traditional',
+    accentColor: input_data?.brand_accent_color || '',
+    churchName: input_data?.church_name || '',
+  }
 
   const copyToClipboard = async (text: string, what: string) => {
     await navigator.clipboard.writeText(text)
@@ -341,134 +354,39 @@ export function BulletinPreview({
         </div>
       )}
 
-      {/* Slides */}
+      {/* Slides — projected in the bulletin's own design */}
       {tab === 'slides' && (
-        <div
-          role="tabpanel"
-          id="panel-slides"
-          aria-labelledby="tab-slides"
-          className="grid sm:grid-cols-2 gap-4"
-        >
-          {content.announcement_slides.map((slide) => (
-            <div
-              key={slide.slide_number}
-              className="relative overflow-hidden panel-deep rounded-2xl p-6 aspect-video flex flex-col justify-center shadow-panel-lg"
-            >
-              <p className="text-xs label-caps-on-dark mb-2">
-                Slide {slide.slide_number} — {slide.type}
-              </p>
-              <h3 className="font-display text-xl text-white mb-2">{slide.headline}</h3>
-              <p className="text-primary-100 leading-relaxed text-sm">{slide.body}</p>
-            </div>
-          ))}
-          <div className="sm:col-span-2 flex justify-center">
-            <CopyButton
-              label="Copy all slide content"
-              copied={copied === 'slides'}
-              onClick={() =>
-                copyToClipboard(
-                  content.announcement_slides
-                    .map((s) => `SLIDE ${s.slide_number}\n${s.headline}\n${s.body}`)
-                    .join('\n\n'),
-                  'slides'
-                )
-              }
-            />
-          </div>
+        <div role="tabpanel" id="panel-slides" aria-labelledby="tab-slides">
+          <SlidesPanel
+            content={content}
+            design={design}
+            copied={copied}
+            onCopy={copyToClipboard}
+          />
         </div>
       )}
 
-      {/* Social */}
+      {/* Social — shown as the post it becomes */}
       {tab === 'social' && (
-        <div
-          role="tabpanel"
-          id="panel-social"
-          aria-labelledby="tab-social"
-          className="space-y-6 max-w-2xl"
-        >
-          {[
-            {
-              key: 'facebook' as const,
-              label: 'Facebook',
-              icon: Facebook,
-              color: 'text-[#1558c0]',
-              bg: 'bg-[#1558c0]/10',
-            },
-            {
-              key: 'instagram' as const,
-              label: 'Instagram',
-              icon: Instagram,
-              color: 'text-[#c1275c]',
-              bg: 'bg-[#c1275c]/10',
-            },
-          ].map(({ key, label, icon: Icon, color, bg }) => (
-            <div key={key} className="card">
-              <div className="flex items-center justify-between mb-3 gap-3">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center`}>
-                    <Icon className={`w-4 h-4 ${color}`} aria-hidden="true" />
-                  </div>
-                  <h3 className="font-display text-lg text-primary-800">{label}</h3>
-                </div>
-                <CopyButton
-                  label={`Copy the ${label} post`}
-                  copied={copied === key}
-                  onClick={() => copyToClipboard(content.social_post[key], key)}
-                />
-              </div>
-              <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed bg-cream rounded-xl p-4 border border-primary-100">
-                {content.social_post[key]}
-              </p>
-            </div>
-          ))}
+        <div role="tabpanel" id="panel-social" aria-labelledby="tab-social">
+          <SocialPanel
+            content={content}
+            design={design}
+            copied={copied}
+            onCopy={copyToClipboard}
+          />
         </div>
       )}
 
-      {/* Email */}
+      {/* Email — framed as the newsletter it becomes */}
       {tab === 'email' && (
-        <div
-          role="tabpanel"
-          id="panel-email"
-          aria-labelledby="tab-email"
-          className="bg-parchment rounded-2xl border border-rule-light shadow-paper overflow-hidden max-w-2xl"
-        >
-          <div className="bg-cream border-b border-primary-100 px-6 py-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <p className="label-caps mb-1">Subject</p>
-                <p className="font-display text-lg text-primary-800">
-                  {content.email_newsletter.subject_line}
-                </p>
-              </div>
-              <CopyButton
-                label="Copy the subject line"
-                copied={copied === 'subject'}
-                onClick={() =>
-                  copyToClipboard(content.email_newsletter.subject_line, 'subject')
-                }
-              />
-            </div>
-            <div className="mt-4 pt-4 border-t border-primary-100">
-              <p className="label-caps mb-1">Preview text</p>
-              <p className="text-sm text-ink-muted">
-                {content.email_newsletter.preview_text}
-              </p>
-            </div>
-          </div>
-
-          <div className="px-6 py-5">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <p className="label-caps">Body</p>
-              <CopyButton
-                label="Copy the email body"
-                copied={copied === 'body'}
-                onClick={() => copyToClipboard(content.email_newsletter.body, 'body')}
-              />
-            </div>
-            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-              {content.email_newsletter.body}
-            </p>
-          </div>
+        <div role="tabpanel" id="panel-email" aria-labelledby="tab-email">
+          <EmailPanel
+            content={content}
+            design={design}
+            copied={copied}
+            onCopy={copyToClipboard}
+          />
         </div>
       )}
     </div>
