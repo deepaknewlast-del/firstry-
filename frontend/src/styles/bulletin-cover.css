@@ -1,0 +1,184 @@
+/* The bulletin cover, in the browser.
+ *
+ * Deliberately a mirror of backend/services/pdf_service.py: same artwork, same
+ * veil percentages, same gold-on-ground palette, same faces. Sizes are in
+ * container units, so the whole cover scales exactly like the printed page
+ * whether it is a 240px card or a full-width hero.
+ *
+ * Fonts come from Google Fonts (as the rest of the app does) and are the same
+ * families the PDF embeds.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Great+Vibes&family=Montserrat:wght@600;800&display=swap');
+
+.bcover {
+  container-type: inline-size;
+  position: relative;
+  aspect-ratio: 8.5 / 11;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* shape and shadow come from the caller */
+}
+
+.bcover-veil,
+.bcover-shade,
+.bcover-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.bcover-veil {
+  background-color: rgba(var(--ground-rgb), 0.4);
+}
+
+.bcover-shade {
+  background-image: linear-gradient(
+    180deg,
+    rgba(var(--ground-rgb), 0.8) 0%,
+    rgba(var(--ground-rgb), 0.05) 24%,
+    rgba(var(--ground-rgb), 0.05) 70%,
+    rgba(var(--ground-rgb), 0.86) 100%
+  );
+}
+
+.bcover-frame {
+  position: absolute;
+  inset: 3.5cqw;
+  border: 1px solid var(--gold);
+}
+
+.bcover-frame-in {
+  position: absolute;
+  inset: 4.7cqw;
+  border: 3px double var(--gold);
+}
+
+.bcover-corner {
+  position: absolute;
+  color: var(--gold);
+  font-size: 1.7cqw;
+  line-height: 1;
+}
+.bcover-c1 { top: 2.4cqw; left: 3cqw; }
+.bcover-c2 { top: 2.4cqw; right: 3cqw; }
+.bcover-c3 { bottom: 2.4cqw; left: 3cqw; }
+.bcover-c4 { bottom: 2.4cqw; right: 3cqw; }
+
+.bcover-body {
+  position: absolute;
+  inset: 0;
+  padding: 11cqw 10.5cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.bcover-logo {
+  max-height: 20cqw;
+  max-width: 50cqw;
+  object-fit: contain;
+  margin-top: 6cqw;
+  margin-bottom: 3cqw;
+}
+
+.bcover-kick {
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-size: 2.2cqw;
+  letter-spacing: 0.55em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 5cqw 0 2.4cqw;
+}
+
+.bcover-name {
+  color: var(--gold);
+  line-height: 1.28;
+  margin: 0 2cqw;
+  text-wrap: balance;
+}
+
+.bcover-rule {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+  width: 33cqw;
+  margin: 3cqw auto 2.4cqw;
+}
+.bcover-rule::before,
+.bcover-rule::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--gold);
+}
+.bcover-rule span {
+  color: var(--gold);
+  font-size: 1.7cqw;
+  line-height: 1;
+}
+
+.bcover-tag {
+  font-family: 'Great Vibes', cursive;
+  font-size: 4.4cqw;
+  line-height: 1.45;
+  color: #f8f4ea;
+  margin: 0 3cqw;
+}
+
+.bcover-when {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8.5cqw;
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  font-size: 2.2cqw;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #f8f4ea;
+}
+.bcover-when .bcover-sep {
+  color: var(--gold);
+}
+
+/* Tone variants — the differences the printed cover makes between tones. */
+.bcover-tone-warm .bcover-name {
+  font-family: 'Great Vibes', cursive;
+  font-weight: 400;
+  font-size: 6.8cqw;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+.bcover-tone-warm .bcover-kick { margin-top: 3cqw; }
+
+.bcover-tone-contemporary .bcover-name {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-size: 4.4cqw;
+}
+.bcover-tone-contemporary .bcover-tag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.1cqw;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.bcover-tone-traditional .bcover-name {
+  font-family: 'Cinzel Decorative', 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 6.4cqw;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bcover-tone-formal .bcover-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 5.4cqw;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

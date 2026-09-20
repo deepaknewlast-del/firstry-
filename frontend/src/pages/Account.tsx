@@ -8,6 +8,12 @@ import { useSubscription } from '../hooks/useSubscription'
 import { openBillingPortal } from '../lib/api'
 import { supabase } from '../lib/supabase'
 
+import {
+  BulletinCoverPreview,
+  CoverTonePicker,
+  type CoverTone,
+} from '../components/bulletin/BulletinCoverPreview'
+
 const ACCENT_OPTIONS = [
   { name: 'Plum', value: '#4e2456' },
   { name: 'Navy', value: '#1f3a5f' },
@@ -24,6 +30,7 @@ export default function Account() {
   const { profile, isPaid, loading } = useSubscription()
   const [churchName, setChurchName] = useState('')
   const [denomination, setDenomination] = useState('')
+  const [previewTone, setPreviewTone] = useState<CoverTone>('traditional')
   const [accentColor, setAccentColor] = useState('#4e2456')
   const [logoPath, setLogoPath] = useState<string | null>(null)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
@@ -214,14 +221,22 @@ export default function Account() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-rule bg-cream p-4">
-            <p className="label-caps mb-2">PDF header preview</p>
-            <div className="bg-white rounded-lg border border-rule px-5 py-4 text-center">
-              {logoUrl && <img src={logoUrl} alt="" className="max-h-12 mx-auto mb-2" />}
-              <p className="font-display text-xl" style={{ color: accentColor }}>
-                {churchName || 'Your Church'}
-              </p>
-              <div className="h-0.5 mt-3" style={{ backgroundColor: accentColor }} />
+          <div className="rounded-xl border border-rule bg-cream p-5">
+            <p className="label-caps mb-1">Your bulletin cover</p>
+            <p className="text-xs text-ink-muted mb-4">
+              This is the design your bulletin prints with — your church name, your colour,
+              your logo.
+            </p>
+            <div className="grid gap-6 sm:grid-cols-[280px_minmax(0,1fr)] items-start">
+              <BulletinCoverPreview
+                churchName={churchName}
+                accentColor={accentColor}
+                logoSrc={logoUrl}
+                tone={previewTone}
+                showTonePicker={false}
+                className="w-full"
+              />
+              <CoverTonePicker value={previewTone} onChange={setPreviewTone} />
             </div>
           </div>
 
