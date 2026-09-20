@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libcairo2 \
         libgdk-pixbuf-2.0-0 \
         shared-mime-info \
+        fontconfig \
         fonts-dejavu-core \
         fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
