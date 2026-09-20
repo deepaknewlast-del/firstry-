@@ -1,0 +1,52 @@
+# Render Blueprint — ChurchPress backend (FastAPI)
+# Deploy: Render dashboard -> New + -> Blueprint -> pick this repo.
+# Secrets marked sync:false are entered once in the Render dashboard, never in git.
+services:
+  - type: web
+    name: churchpress-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      # --- fixed values ---
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: production        # disables /docs in production
+      - key: FRONTEND_URL
+        value: https://churchbulletin.in
+      - key: ALLOWED_ORIGINS
+        value: https://churchbulletin.in,https://www.churchbulletin.in
+      - key: MAX_REQUEST_BYTES
+        value: "131072"
+      - key: IP_GENERATION_DAILY_LIMIT
+        value: "20"
+      - key: IP_BILLING_HOURLY_LIMIT
+        value: "10"
+      # --- flip to "production" + live keys after Paddle approval ---
+      - key: PADDLE_ENVIRONMENT
+        value: sandbox
+      # --- secrets: enter in Render dashboard after first deploy ---
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PADDLE_API_KEY
+        sync: false
+      - key: PADDLE_WEBHOOK_SECRET
+        sync: false
+      - key: PADDLE_PRICE_MONTHLY
+        sync: false
+      - key: PADDLE_PRICE_ANNUAL
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
