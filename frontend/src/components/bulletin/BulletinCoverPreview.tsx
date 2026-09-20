@@ -59,7 +59,12 @@ const TONES: {
 
 const GOLD = '#d7b463'
 
-function rgbTriplet(hex: string): string {
+/** The tone's artwork, ground and words — shared with the other output panels. */
+export function coverTheme(tone: CoverTone) {
+  return TONES.find((t) => t.id === tone) ?? TONES[0]
+}
+
+export function rgbTriplet(hex: string): string {
   const h = hex.replace('#', '')
   const full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h
   const n = parseInt(full, 16)
@@ -81,7 +86,7 @@ function luminance(hex: string): number {
  * lettering needs a dark page, and a church's colour has to be visible or the
  * setting means nothing.
  */
-function asGround(hex: string): string {
+export function asGround(hex: string): string {
   if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) return '#1d2a1a'
   const lum = luminance(hex)
   if (lum <= 0.22) return hex
