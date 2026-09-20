@@ -1,11 +1,14 @@
 """Upstash Redis-backed rate limiting via its REST API."""
 import datetime
 import hashlib
+import logging
 
 import httpx
 from fastapi import HTTPException
 
 from config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -47,26 +50,33 @@ async def check_rate_limit(user_id: str, is_paid: bool) -> dict:
         month_key = f"rate_free:{user_id}"
         limit = FREE_TIER_LIMIT
 
-    async with httpx.AsyncClient() as client:
-        incr = await client.post(f"{base_url}/incr/{month_key}", headers=headers)
-        incr.raise_for_status()
-        current = incr.json().get("result", 0)
+    try:
+        async with httpx.AsyncClient() as client:
+            incr = await client.post(f"{base_url}/incr/{month_key}", headers=headers)
+            incr.raise_for_status()
+            current = incr.json().get("result", 0)
 
-        if current == 1 and is_paid:
-            # Set a 60-day expiry on the first use of the monthly window.
-            await client.post(f"{base_url}/expire/{month_key}/5184000", headers=headers)
+            if current == 1 and is_paid:
+                # Set a 60-day expiry on the first use of the monthly window.
+                await client.post(f"{base_url}/expire/{month_key}/5184000", headers=headers)
 
-        if current > limit:
-            await client.post(f"{base_url}/decr/{month_key}", headers=headers)
-            raise HTTPException(
-                status_code=429,
-                detail={
-                    "error": "limit_reached",
-                    "message": "Free tier limit reached. Upgrade to continue." if not is_paid else "Monthly limit reached. Try again next month.",
-                    "limit": limit,
-                    "used": current - 1,
-                },
-            )
+            if current > limit:
+                await client.post(f"{base_url}/decr/{month_key}", headers=headers)
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error": "limit_reached",
+                        "message": "Free tier limit reached. Upgrade to continue." if not is_paid else "Monthly limit reached. Try again next month.",
+                        "limit": limit,
+                        "used": current - 1,
+                    },
+                )
+    except (httpx.HTTPError, ValueError) as e:
+        # Redis configured but unreachable/misconfigured — fail open rather
+        # than 500-ing real users. The durable DB counter still gates the
+        # free tier, and the monthly cap is abuse protection, not billing.
+        logger.warning("Redis rate limiter unavailable (%s); failing open", e)
+        return {"used": 0, "limit": limit}
 
     return {"used": current, "limit": limit}
 
@@ -82,23 +92,28 @@ async def check_ip_rate_limit(ip_address: str, action: str, limit: int, window_s
     headers = _redis_headers()
     base_url = _redis_base_url()
 
-    async with httpx.AsyncClient() as client:
-        incr = await client.post(f"{base_url}/incr/{key}", headers=headers)
-        incr.raise_for_status()
-        current = incr.json().get("result", 0)
+    try:
+        async with httpx.AsyncClient() as client:
+            incr = await client.post(f"{base_url}/incr/{key}", headers=headers)
+            incr.raise_for_status()
+            current = incr.json().get("result", 0)
 
-        if current == 1:
-            await client.post(f"{base_url}/expire/{key}/{window_seconds}", headers=headers)
+            if current == 1:
+                await client.post(f"{base_url}/expire/{key}/{window_seconds}", headers=headers)
 
-        if current > limit:
-            await client.post(f"{base_url}/decr/{key}", headers=headers)
-            raise HTTPException(
-                status_code=429,
-                detail={
-                    "error": "ip_rate_limited",
-                    "message": "Too many requests from this network. Please try again later.",
-                    "limit": limit,
-                },
-            )
+            if current > limit:
+                await client.post(f"{base_url}/decr/{key}", headers=headers)
+                raise HTTPException(
+                    status_code=429,
+                    detail={
+                        "error": "ip_rate_limited",
+                        "message": "Too many requests from this network. Please try again later.",
+                        "limit": limit,
+                    },
+                )
+    except (httpx.HTTPError, ValueError) as e:
+        # Same fail-open policy: a Redis outage must never block generation.
+        logger.warning("Redis IP limiter unavailable (%s); failing open", e)
+        return {"used": 0, "limit": limit}
 
     return {"used": current, "limit": limit}
