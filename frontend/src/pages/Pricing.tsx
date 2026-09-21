@@ -15,6 +15,9 @@ const PADDLE_TOKEN = import.meta.env.VITE_PADDLE_CLIENT_TOKEN as string | undefi
 if (!PADDLE_ENV) throw new Error('[Paddle] VITE_PADDLE_ENVIRONMENT is not set. Check your .env file.')
 if (!PADDLE_TOKEN) throw new Error('[Paddle] VITE_PADDLE_CLIENT_TOKEN is not set. Check your .env file.')
 
+// Diagnostic banners are a developer aid — never show them on the live site.
+const IS_PRODUCTION = PADDLE_ENV === 'production'
+
 // ─── Tier definitions — easy to edit ────────────────────────────────────
 export interface Tier {
   name: string
@@ -162,8 +165,8 @@ export default function Pricing() {
     <div className="min-h-screen bg-cream flex flex-col">
       <Navbar />
 
-      {/* DEBUG BANNER — remove after fixing */}
-      {debugError && (
+      {/* Developer-only diagnostic; hidden on the live site. */}
+      {debugError && !IS_PRODUCTION && (
         <div className="bg-red-600 text-white text-sm px-4 py-3 text-center font-mono">
           ⚠️ Paddle Error: {debugError}
         </div>
