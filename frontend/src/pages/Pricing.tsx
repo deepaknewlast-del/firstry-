@@ -45,8 +45,8 @@ const TIERS: Tier[] = [
       'Cancel anytime',
     ],
     priceId: {
-      month: 'pri_01m2mqqz95ts3s9bmaxhrdh03x',
-      year: 'pri_01m2mqr0ckj62a83qwc03zpedk',
+      month: 'pri_01m3280xqyymmf75vrc3vfyw1w',
+      year: 'pri_01m3280yc9fvksz3vwgn91gx5j',
     },
   },
 ]
