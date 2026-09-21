@@ -29,11 +29,14 @@ export function Footer() {
 
         <nav aria-label="Legal" className="text-sm flex flex-col gap-1">
           <span className="label-caps-on-dark mb-1">Legal</span>
-          <Link to="/privacy" className={LINK_CLASS}>
-            Privacy
-          </Link>
           <Link to="/terms" className={LINK_CLASS}>
             Terms
+          </Link>
+          <Link to="/refund-policy" className={LINK_CLASS}>
+            Refund policy
+          </Link>
+          <Link to="/privacy" className={LINK_CLASS}>
+            Privacy
           </Link>
         </nav>
       </div>

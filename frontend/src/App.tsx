@@ -12,7 +12,7 @@ import Account from './pages/Account'
 import Pricing from './pages/Pricing'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
-import { Privacy, Terms } from './pages/Legal'
+import { Privacy, RefundPolicy, Terms } from './pages/Legal'
 import Welcome from './pages/Welcome'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -56,6 +56,7 @@ export default function App() {
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />

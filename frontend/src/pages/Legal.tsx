@@ -1,6 +1,20 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Navbar } from '../components/layout/Navbar'
 import { Footer } from '../components/layout/Footer'
+
+/**
+ * Sole proprietor's legal name, exactly as it appears on PAN.
+ *
+ * Shown as the seller of record in the Terms, Privacy Policy and Refund Policy.
+ * Payment providers match this against identity documents and expect a sole
+ * trader to be identified by legal name, so keep this one value in sync with
+ * the Paddle live account — and change it in one place, not three.
+ */
+export const SELLER_LEGAL_NAME = 'Deepak'
+
+/** Local alias so the pages below stay readable. */
+const SELLER = SELLER_LEGAL_NAME
 
 /** Shared layout for the legal pages — set as a printed page, measured for reading. */
 function LegalPage({
@@ -41,7 +55,7 @@ export function Privacy() {
       <section>
         <h2>Who we are</h2>
         <p>
-          ChurchPress is operated by <strong>Deepak</strong>, an individual proprietor in India.
+          ChurchPress is operated by <strong>{SELLER}</strong>, an individual proprietor in India.
           This policy explains what ChurchPress collects, why, and what happens to it.
         </p>
       </section>
@@ -164,7 +178,7 @@ export function Privacy() {
         <h2>Contact</h2>
         <p>
           Questions about privacy:{' '}
-          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to Deepak,
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to {SELLER},
           ChurchPress, India.
         </p>
       </section>
@@ -178,7 +192,7 @@ export function Terms() {
       <section>
         <h2>Who we are</h2>
         <p>
-          ChurchPress is operated by <strong>Deepak</strong>, an individual proprietor in India
+          ChurchPress is operated by <strong>{SELLER}</strong>, an individual proprietor in India
           (&ldquo;we&rdquo;, &ldquo;us&rdquo;). &ldquo;ChurchPress&rdquo; means this website at
           churchbulletin.in and the bulletin service it provides.
         </p>
@@ -239,6 +253,10 @@ export function Terms() {
           <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a> within 14 days of a
           payment and we will refund it in full — no forms, no questions. Refunds past 14 days are
           at our discretion. Cancelling alone does not refund the current period.
+        </p>
+        <p>
+          The full detail, including how long a refund takes to reach you:{' '}
+          <Link to="/refund-policy">Refund Policy</Link>.
         </p>
       </section>
 
@@ -321,8 +339,97 @@ export function Terms() {
         <h2>Contact</h2>
         <p>
           Anything unclear about these terms:{' '}
-          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to Deepak,
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a>. Write to {SELLER},
           ChurchPress, India.
+        </p>
+      </section>
+    </LegalPage>
+  )
+}
+
+export function RefundPolicy() {
+  return (
+    <LegalPage eyebrow="Legal" title="Refund Policy" updated="21 September 2026">
+      <section>
+        <h2>Who this covers</h2>
+        <p>
+          ChurchPress is operated by <strong>{SELLER}</strong>, an individual proprietor in India.
+          Paid subscriptions are sold and processed by <strong>Paddle.com</strong>, our merchant of
+          record, which is the seller of the subscription for payment purposes and issues your
+          receipt and invoice. This policy explains when we refund a payment, and how to ask for
+          one.
+        </p>
+      </section>
+
+      <section>
+        <h2>Fourteen days, no questions asked</h2>
+        <p>
+          If ChurchPress is not right for your church, email{' '}
+          <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a> within{' '}
+          <strong>14 days</strong> of a payment and we will refund it in full. No forms, no
+          explanation needed, no conditions to meet. This applies to both monthly and annual plans,
+          and to renewals as well as a first payment.
+        </p>
+        <p>
+          Refunds go back to the original payment method through Paddle. We approve a request within
+          2 business days of receiving it; your bank or card issuer may then take a further 5–10
+          business days to show the money on your statement. Any VAT, GST, or sales tax charged on
+          the payment is refunded with it.
+        </p>
+      </section>
+
+      <section>
+        <h2>After 14 days</h2>
+        <p>
+          Past 14 days we refund at our discretion — most often where a renewal took you by
+          surprise, or where you were billed twice. If you have not used the service since the
+          charge, tell us. We would rather refund you than keep money for a bulletin you never
+          printed.
+        </p>
+      </section>
+
+      <section>
+        <h2>Cancelling</h2>
+        <p>
+          Cancelling stops future charges and keeps your access until the end of the period you
+          have already paid for. Cancelling on its own does not refund that period, but it does mean
+          you are never charged again. You can cancel at any time from the customer portal, which
+          Paddle hosts — the link is on your account page.
+        </p>
+      </section>
+
+      <section>
+        <h2>The free tier</h2>
+        <p>
+          The free tier costs nothing and asks for no card, so there is nothing to refund. You are
+          only ever charged if you choose to subscribe to a paid plan.
+        </p>
+      </section>
+
+      <section>
+        <h2>If a renewal payment fails</h2>
+        <p>
+          Paddle retries a failed renewal automatically, and we email you if it stays unpaid. If it
+          remains unpaid we may pause paid access rather than keep billing, so you are never charged
+          for a period you cannot use.
+        </p>
+      </section>
+
+      <section>
+        <h2>Your legal rights</h2>
+        <p>
+          Nothing in this policy limits rights you have under the consumer law that applies to you,
+          including any statutory right of withdrawal. Where the law gives you a longer or stronger
+          right to a refund than this policy does, that right applies.
+        </p>
+      </section>
+
+      <section>
+        <h2>How to ask</h2>
+        <p>
+          Email <a href="mailto:hello@churchbulletin.in">hello@churchbulletin.in</a> from the
+          address on your account, or write to {SELLER}, ChurchPress, India. Mention your church
+          name and roughly when you were charged, and we will find the payment.
         </p>
       </section>
     </LegalPage>
