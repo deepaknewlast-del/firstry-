@@ -72,6 +72,15 @@ const PAGES = [
       "What ChurchPress collects, why, how long it is kept, and the choices you have. Your church's details are never sold, shared, or used to train third-party models.",
   },
   {
+    url: '/templates',
+    out: 'templates.html',
+    breadcrumb: 'Bulletin templates',
+    title: 'Free Church Bulletin Templates — 4 Styles to Download and Print | ChurchPress',
+    description:
+      'Four free church bulletin templates, one for each tone: warm and welcoming, traditional, formal and reverent, and contemporary. Print-ready PDFs, no signup and no watermark, plus the inside spread of every one.',
+    faqFromBundle: true,
+  },
+  {
     url: '/refund-policy',
     out: 'refund-policy.html',
     breadcrumb: 'Refund Policy',
@@ -105,11 +114,9 @@ function replaceOnce(html, pattern, replacement, label, missed) {
 }
 
 /** A per-page JSON-LD graph, referencing the Organisation/WebSite on the home page. */
-function jsonLdFor(page) {
+function jsonLdFor(page, bundle) {
   const url = `${SITE}${page.url}`
-  return {
-    '@context': 'https://schema.org',
-    '@graph': [
+  const graph = [
       {
         '@type': 'WebPage',
         '@id': `${url}#webpage`,
@@ -129,11 +136,27 @@ function jsonLdFor(page) {
           { '@type': 'ListItem', position: 2, name: page.breadcrumb, item: url },
         ],
       },
-    ],
+  ]
+
+  // The FAQ is rendered from one array in the page component, so the schema can
+  // never drift from the answers a visitor actually reads.
+  const faq = page.faqFromBundle ? bundle?.TEMPLATE_FAQ : null
+  if (Array.isArray(faq) && faq.length) {
+    graph.push({
+      '@type': 'FAQPage',
+      '@id': `${url}#faq`,
+      mainEntity: faq.map(({ question, answer }) => ({
+        '@type': 'Question',
+        name: question,
+        acceptedAnswer: { '@type': 'Answer', text: answer },
+      })),
+    })
   }
+
+  return { '@context': 'https://schema.org', '@graph': graph }
 }
 
-function applyHead(shell, page, missed) {
+function applyHead(shell, page, missed, bundle) {
   if (page.keepHead) return shell
 
   const url = `${SITE}${page.url}`
@@ -195,7 +218,7 @@ function applyHead(shell, page, missed) {
   html = replaceOnce(
     html,
     /<script type="application\/ld\+json">[\s\S]*?<\/script>/,
-    `<script type="application/ld+json">\n${JSON.stringify(jsonLdFor(page), null, 2)}\n    </script>`,
+    `<script type="application/ld+json">\n${JSON.stringify(jsonLdFor(page, bundle), null, 2)}\n    </script>`,
     'json-ld',
     missed,
   )
@@ -230,8 +253,10 @@ async function main() {
   }
 
   let render
+  let bundle
   try {
-    ;({ render } = await import(pathToFileURL(SSR_ENTRY).href))
+    bundle = await import(pathToFileURL(SSR_ENTRY).href)
+    render = bundle.render
   } catch (error) {
     console.warn('[prerender] SSR bundle failed to load, leaving the site client-rendered.')
     console.warn(`[prerender] ${error?.stack ?? error}`)
@@ -257,7 +282,7 @@ async function main() {
       continue
     }
 
-    let html = applyHead(shell, page, missed)
+    let html = applyHead(shell, page, missed, bundle)
     if (!html.includes('<div id="root"></div>')) {
       console.warn(`[prerender] ${page.url}: could not find the root element in the shell. Skipping.`)
       continue

@@ -10,6 +10,7 @@ import Generate from './pages/Generate'
 import History from './pages/History'
 import Account from './pages/Account'
 import Pricing from './pages/Pricing'
+import Templates from './pages/Templates'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import { Privacy, RefundPolicy, Terms } from './pages/Legal'
@@ -59,6 +60,7 @@ export function AppShell() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/templates" element={<Templates />} />
         <Route path="/welcome" element={<Welcome />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />

@@ -16,6 +16,13 @@ import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom/server'
 import { AppShell } from './App'
 
+/**
+ * Re-exported so scripts/prerender.mjs can build the FAQPage schema from the
+ * same array the page renders. Google requires the markup to match visible
+ * text, and the surest way to keep them identical is to have one copy.
+ */
+export { TEMPLATE_FAQ } from './pages/Templates'
+
 export function render(url: string): string {
   return renderToString(
     <StaticRouter location={url}>

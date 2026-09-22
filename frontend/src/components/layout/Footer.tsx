@@ -22,6 +22,9 @@ export function Footer() {
           <Link to="/pricing" className={LINK_CLASS}>
             Pricing
           </Link>
+          <Link to="/templates" className={LINK_CLASS}>
+            Bulletin templates
+          </Link>
           <a href="mailto:hello@churchbulletin.in" className={LINK_CLASS}>
             Support
           </a>

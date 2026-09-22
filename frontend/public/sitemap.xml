@@ -23,6 +23,19 @@
     <priority>0.9</priority>
   </url>
   <url>
+    <loc>https://churchbulletin.in/templates</loc>
+    <lastmod>2026-09-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://churchbulletin.in/templates/warm-1.webp</image:loc>
+      <image:title>Free church bulletin template — warm and welcoming tone</image:title>
+      <image:caption
+        >A print-ready church bulletin template, downloadable as a PDF. One of four styles, each real output from ChurchPress.</image:caption
+      >
+    </image:image>
+  </url>
+  <url>
     <loc>https://churchbulletin.in/refund-policy</loc>
     <lastmod>2026-09-21</lastmod>
     <changefreq>yearly</changefreq>
