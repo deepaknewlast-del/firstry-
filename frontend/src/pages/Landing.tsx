@@ -6,7 +6,6 @@ import {
   Mail,
   Presentation,
   Share2,
-  Star,
   Users,
 } from 'lucide-react'
 import { LogoMark } from '../components/brand/Logo'
@@ -57,24 +56,28 @@ const STEPS = [
   },
 ]
 
-const TESTIMONIALS = [
+/**
+ * No testimonials here, deliberately. ChurchPress launched in September 2026 and
+ * has no customers to quote, and inventing quotes with invented names and
+ * churches on a page that also takes money is dishonest — as well as unlawful
+ * in the US and UK markets this site sells to. These are commitments we can
+ * actually keep, so this is what sits where a testimonial would.
+ */
+const PROMISES = [
   {
-    quote:
-      'I used to spend two hours every Saturday night on the bulletin. Now it takes ten minutes, and it looks better than what I was making by hand.',
-    name: 'Sandra W.',
-    role: 'Church Secretary, First Baptist Church, Texas',
+    label: 'Free',
+    title: 'Free means free',
+    body: 'Three complete bulletins before a card is ever asked for. No countdown, no trial that expires while you are away, and cancelling happens in the billing portal in your account — not by emailing us and hoping.',
   },
   {
-    quote:
-      'Our volunteer who did the bulletin moved away and we were stuck. We had a finished one the same afternoon.',
-    name: 'Deacon James T.',
-    role: "St. Andrew's Presbyterian, Scotland",
+    label: 'Yours',
+    title: 'Nothing publishes itself',
+    body: 'Everything comes out as plain text you can change. Your bulletin is a draft until you print it, and your email is a draft until you send it.',
   },
   {
-    quote:
-      'The email is what surprised me. Our people actually open it now because it reads like it came from the pastor, not a mail merge.',
-    name: 'Pastor Mark H.',
-    role: 'Grace Community Church, Ontario',
+    label: 'Private',
+    title: 'Your church is not the product',
+    body: 'The names, prayer requests and giving details you enter stay in your account. They are never sold, never shared, and never used to train third-party models.',
   },
 ]
 
@@ -325,45 +328,23 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ---------------- Testimonials ---------------- */}
+        {/* ---------------- The plain deal ---------------- */}
         <section className="py-20 sm:py-24">
           <div className="max-w-5xl mx-auto px-4">
             <div className="text-center mb-14">
-              <p className="eyebrow mb-4">From the church office</p>
+              <p className="eyebrow mb-4">The plain deal</p>
               <h2 className="font-display text-3xl sm:text-4xl text-primary-700">
-                The people who actually make the bulletin
+                Three things that are not fine print
               </h2>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-6 stagger">
-              {TESTIMONIALS.map(({ quote, name, role }) => (
-                <figure key={name} className="card card-hover m-0 flex flex-col">
-                  <div className="flex gap-1 mb-4" aria-label="Rated 5 out of 5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-gold-400 text-gold-500"
-                        aria-hidden="true"
-                      />
-                    ))}
-                  </div>
-                  <blockquote className="font-display text-base text-primary-800 leading-relaxed mb-5 m-0 flex-1">
-                    &ldquo;{quote}&rdquo;
-                  </blockquote>
-                  <figcaption className="flex items-center gap-3 pt-4 border-t border-rule-light">
-                    <div className="avatar w-9 h-9 text-xs" aria-hidden="true">
-                      {name
-                        .split(' ')
-                        .map((p) => p[0])
-                        .slice(0, 2)
-                        .join('')}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm text-primary-800">{name}</p>
-                      <p className="text-xs text-ink-muted">{role}</p>
-                    </div>
-                  </figcaption>
-                </figure>
+              {PROMISES.map(({ label, title, body }) => (
+                <article key={title} className="card card-hover flex flex-col">
+                  <p className="label-caps mb-3">{label}</p>
+                  <h3 className="font-display text-xl text-primary-800 mb-3">{title}</h3>
+                  <p className="text-sm text-ink-muted leading-relaxed m-0">{body}</p>
+                </article>
               ))}
             </div>
           </div>
