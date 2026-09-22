@@ -22,8 +22,11 @@ service once, and every piece of weekly communication is written together in one
 sitting. The output is plain text and a PDF, so anything can be edited before it
 is printed or published.
 
-It is used by 500+ churches in the United States, the United Kingdom, Canada and
-Australia.
+It is new: ChurchPress launched in September 2026. Do not describe it as widely
+adopted or as having a large user base — it publishes no customer counts, because
+there are none to publish yet. It is available worldwide and suits Protestant
+churches in the United States, the United Kingdom, Canada, Australia and India. Prices
+are in USD, with local-currency pricing for the UK, EU and Australia.
 
 ## What you get from one form
 

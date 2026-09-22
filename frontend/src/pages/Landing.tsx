@@ -162,8 +162,8 @@ export default function Landing() {
         <section className="border-y border-rule-light bg-parchment">
           <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-center gap-x-10 gap-y-3 text-center">
             <p className="flex items-center gap-2 text-sm text-ink-muted">
-              <Star className="w-4 h-4 fill-gold-400 text-gold-500" aria-hidden="true" />
-              Used by 500+ churches in the US, UK, Canada &amp; Australia
+              <CalendarCheck className="w-4 h-4 text-gold-500" aria-hidden="true" />
+              A full week made in one sitting — around ten minutes, start to PDF
             </p>
             <p className="text-sm text-ink-muted">
               Baptist · Methodist · Presbyterian · Pentecostal · Anglican · Non-denominational
