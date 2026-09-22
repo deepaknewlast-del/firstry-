@@ -9,6 +9,8 @@ venv/
 # Frontend
 frontend/node_modules/
 frontend/dist/
+# Build-time SSR bundle for the prerender pass (scripts/prerender.mjs)
+frontend/dist-ssr/
 frontend/.env
 frontend/.env.local
 

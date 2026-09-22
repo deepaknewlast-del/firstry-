@@ -34,9 +34,15 @@ function PublicRoute({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-export default function App() {
+/**
+ * The router-independent shell. Kept separate from `App` so the build-time
+ * prerenderer (src/entry-server.tsx) can render the exact same tree under a
+ * StaticRouter and bake the text into the HTML that crawlers and AI assistants
+ * actually read.
+ */
+export function AppShell() {
   return (
-    <BrowserRouter>
+    <>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -67,6 +73,14 @@ export default function App() {
         <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    </>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppShell />
     </BrowserRouter>
   )
 }
